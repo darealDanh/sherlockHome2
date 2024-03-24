@@ -49,7 +49,10 @@ protected:
     ElementType type;
 
 public:
-    MapElement(ElementType in_type);
+    MapElement(ElementType in_type)
+    {
+        this->type = in_type;
+    };
     virtual ~MapElement();
     virtual ElementType getType() const;
 };
@@ -69,10 +72,10 @@ public:
 class FakeWall : public MapElement
 {
 private:
-    int req_exp;
+    int req_exp, r, c;
 
 public:
-    FakeWall(int req_exp);
+    FakeWall(int in_req_exp, int r, int c);
     int getReqExp() const;
 };
 
@@ -80,7 +83,7 @@ class Map
 {
 private:
     int num_rows, num_cols;
-    MapElement **map;
+    MapElement ***map;
 
 public:
     Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int num_fake_walls, Position *array_fake_walls) : num_rows(num_rows), num_cols(num_cols);
@@ -100,8 +103,8 @@ public:
 
     Position(const string &str_pos);
 
-    int getRow() const;
-    int getCol() const;
+    int getRow() const { return r; };
+    int getCol() const { return c; };
     void setRow(int r);
     void setCol(int c);
 
