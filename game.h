@@ -75,7 +75,7 @@ private:
     int req_exp, r, c;
 
 public:
-    FakeWall(int in_req_exp, int r, int c);
+    FakeWall(int r, int c);
     int getReqExp() const;
 };
 
@@ -88,7 +88,7 @@ private:
 public:
     Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int num_fake_walls, Position *array_fake_walls) : num_rows(num_rows), num_cols(num_cols);
     ~Map();
-    // bool isValid ( const Position & pos , MovingObject * mv_obj ) const ;
+    bool isValid(const Position &pos, MovingObject *mv_obj) const;
 };
 
 class Position
@@ -105,10 +105,13 @@ public:
 
     int getRow() const { return r; };
     int getCol() const { return c; };
-    void setRow(int r);
-    void setCol(int c);
+    void setRow(int r) { this->r = r; };
+    void setCol(int c) { this->c = c; };
 
-    string str() const;
+    string str() const
+    {
+        return "(" + to_string(r) + "," + to_string(c) + ")";
+    };
 
     bool isEqual(int in_r, int in_c) const;
 };
@@ -120,6 +123,8 @@ protected:
     Position pos;
     Map *map;
     string name;
+    int hp;
+    int exp;
 
 public:
     MovingObject(int index, const Position pos, Map *map, const string &name = "");
@@ -129,47 +134,41 @@ public:
     virtual void move() = 0;
     virtual string str() const = 0;
     static const Position npos;
+    string getName() const;
+    int getHP() const;
+    int getExp() const;
 };
 
-class Sherlock /* TODO */ : public MovingObject
+class Character : public MovingObject
 {
-private:
+protected:
     string moving_rule;
     int hp;
     int exp;
 
+public:
+    Character(int index, const Position &init_pos, Map *map, const string &name);
+    virtual ~Character();
+    virtual Position getNextPosition() = 0;
+    virtual Position getCurrentPosition() const = 0;
+    virtual void move() = 0;
+    virtual string str() const = 0;
+};
+class Sherlock /* TODO */ : public Character
+{
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
-    // getNextPosition
-    // move
-    // str
-    // ...
-    Position getNextPosition();
-    Position getCurrentPosition() const;
-    void move();
     string str() const;
 };
 
-class Watson /* TODO */ : public MovingObject
+class Watson /* TODO */ : public Character
 {
-private:
-    string moving_rule;
-    int hp;
-    int exp;
-
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
-    // getNextPosition
-    // move
-    // str
-    // ...
-    Position getNextPosition();
-    Position getCurrentPosition() const;
-    void move();
     string str() const;
 };
 
-class Criminal /* TODO */ : public MovingObject
+class Criminal /* TODO */ : public Character
 {
 private:
     // TOD
