@@ -143,7 +143,7 @@ string MovingObject::getName() const
 
 // isValid
 
-Sherlock::Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : MovingObject(index, pos, map, "Sherlock")
+Sherlock::Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, pos, map, "Sherlock")
 {
     // finish the constructor
     this->moving_rule = moving_rule;
@@ -243,4 +243,46 @@ string Watson::str() const
 int MovingObject::getExp() const
 {
     return exp;
+}
+
+string Criminal::str() const
+{
+    // Criminal[index=<index>;pos=<pos>]
+    return "Criminal[index=" + to_string(index) + ";pos=" + pos.str() + "]";
+}
+
+Criminal::Criminal(int index, const Position &init_pos, Map *map, Sherlock *sherlock, Watson *watson) : Character(index, init_pos, map, "Criminal")
+{
+    this->sherlock = sherlock;
+    this->watson = watson;
+}
+
+Position Criminal::getNextPosition()
+{
+    // finish the method
+    Position next_pos = pos;
+    int max_distance = -1;
+    Position arr[4];
+    // 4 elements of the arr is the position after moving U,L,D,R respectively, ex: (1,2)
+    arr[0] = Position(pos.getRow() - 1, pos.getCol());
+    arr[1] = Position(pos.getRow(), pos.getCol() - 1);
+    arr[2] = Position(pos.getRow() + 1, pos.getCol());
+    arr[3] = Position(pos.getRow(), pos.getCol() + 1);
+    for (int i = 0; i < 4; i++)
+    {
+        if (map->isValid(arr[i], this))
+        {
+            int distance = abs(arr[i].getRow() - sherlock->getCurrentPosition().getRow()) + abs(arr[i].getCol() - sherlock->getCurrentPosition().getCol()) + abs(arr[i].getRow() - watson->getCurrentPosition().getRow()) + abs(arr[i].getCol() - watson->getCurrentPosition().getCol());
+            if (distance > max_distance)
+            {
+                max_distance = distance;
+                next_pos = arr[i];
+            }
+            else if (distance == max_distance)
+            {
+                continue;
+            }
+        }
+    }
+    return next_pos;
 }

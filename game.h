@@ -86,9 +86,11 @@ private:
     MapElement ***map;
 
 public:
-    Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int num_fake_walls, Position *array_fake_walls) : num_rows(num_rows), num_cols(num_cols);
+    Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int num_fake_walls, Position *array_fake_walls);
     ~Map();
     bool isValid(const Position &pos, MovingObject *mv_obj) const;
+    int getNumRow() const { return num_rows; };
+    int getNumCol() const { return num_cols; };
 };
 
 class Position
@@ -171,14 +173,13 @@ public:
 class Criminal /* TODO */ : public Character
 {
 private:
-    // TOD
+    Sherlock *sherlock;
+    Watson *watson;
 
 public:
     Criminal(int index, const Position &init_pos, Map *map, Sherlock *sherlock, Watson *watson);
-    // getNextPosition
-    // move
-    // str
-    // ...
+    string str() const;
+    Position getNextPosition();
 };
 
 class ArrayMovingObject
