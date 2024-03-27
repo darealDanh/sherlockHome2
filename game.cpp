@@ -159,6 +159,13 @@ Position Character::getCurrentPosition() const
 Position Character::getNextPosition()
 {
     Position next_pos = pos;
+    /*Mỗi lần gọi phương thức, một ký tự tiếp
+theo được sử dụng để làm hướng di chuyển. Lần đầu tiên gọi phương thức thì ký tự đầu
+tiên sẽ được sử dụng. Khi ký tự cuối cùng được sử dụng thì sẽ quay lại bắt đầu quá trình
+này từ ký tự đầu tiên. Ví dụ với moving_rule = "LR" thì thứ tự các ký tự được sử
+dụng là: ’L’, ’R’, ’L’, ’R’, ’L’, ’R’,... Nếu Position được trả ra không phải là một vị trí
+hợp lệ cho đối tượng này di chuyển thì trả về npos thuộc class Position*/
+
     if (moving_rule.length() == 0)
     {
         return Position::npos;
@@ -279,56 +286,4 @@ Position Criminal::getNextPosition()
     return next_pos;
 }
 
-ArrayMovingObject::ArrayMovingObject(int capacity)
-{
-    this->capacity = capacity;
-    arr_mv_objs = new MovingObject *[capacity];
-}
 
-ArrayMovingObject::~ArrayMovingObject()
-{
-    for (int i = 0; i < capacity; i++)
-    {
-        delete arr_mv_objs[i];
-    }
-    delete[] arr_mv_objs;
-}
-
-bool ArrayMovingObject::isFull() const
-{
-    if (count == capacity)
-    {
-        return true;
-    }
-    return false;
-}
-
-bool ArrayMovingObject::add(MovingObject *mv_obj)
-{
-    if (isFull())
-    {
-        return false;
-    }
-    arr_mv_objs[count] = mv_obj;
-    count++;
-    return true;
-}
-
-MovingObject *ArrayMovingObject::get(int index) const
-{
-    if (index < 0 || index >= count)
-    {
-        return nullptr;
-    }
-    return arr_mv_objs[index];
-}
-
-string ArrayMovingObject::str() const
-{
-    /*ArrayMovingObject [ count =3; capacity =10; Criminal [ index =0; pos =(8 ,9) ]; Sherlock [ index =1; pos (1 ,4) ; moving_rule = RUU ]; Watson [ index =2; pos=(2 ,1) ; moving_rule = LU ]]*/
-    string res = "ArrayMovingObject [ count =" + to_string(count) + "; capacity =" + to_string(capacity) + "; ";
-    for (int i = 0; i < count; i++)
-    {
-        res += arr_mv_objs[i]->str() + "[ " + "index = " + arr_mv_objs->index + "; pos =" + arr_mv_objs->pos.str() + "; moving_rule =" + arr_mv_objs->moving_rule + " ]";
-    }
-}
