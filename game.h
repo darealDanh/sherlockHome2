@@ -103,7 +103,7 @@ public:
 
     Position(int r = 0, int c = 0);
 
-    Position(const string &str_pos);
+    Position(const string &str_pos); //(r,c)
 
     int getRow() const { return r; };
     int getCol() const { return c; };
@@ -143,6 +143,8 @@ public:
 
 class Character : public MovingObject
 {
+    friend class TestStudyInPink;
+
 protected:
     string moving_rule;
     int hp;
@@ -151,9 +153,9 @@ protected:
 public:
     Character(int index, const Position &init_pos, Map *map, const string &name);
     virtual ~Character();
-    virtual Position getNextPosition() = 0;
-    virtual Position getCurrentPosition() const = 0;
-    virtual void move() = 0;
+    virtual Position getNextPosition();
+    virtual Position getCurrentPosition() const;
+    virtual void move();
     virtual string str() const = 0;
 };
 class Sherlock /* TODO */ : public Character
@@ -161,6 +163,7 @@ class Sherlock /* TODO */ : public Character
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
+    Position getNextPosition();
 };
 
 class Watson /* TODO */ : public Character
@@ -168,6 +171,7 @@ class Watson /* TODO */ : public Character
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
+    Position getNextPosition();
 };
 
 class Criminal /* TODO */ : public Character

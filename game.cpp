@@ -159,13 +159,6 @@ Position Character::getCurrentPosition() const
 Position Character::getNextPosition()
 {
     Position next_pos = pos;
-    /*Mỗi lần gọi phương thức, một ký tự tiếp
-theo được sử dụng để làm hướng di chuyển. Lần đầu tiên gọi phương thức thì ký tự đầu
-tiên sẽ được sử dụng. Khi ký tự cuối cùng được sử dụng thì sẽ quay lại bắt đầu quá trình
-này từ ký tự đầu tiên. Ví dụ với moving_rule = "LR" thì thứ tự các ký tự được sử
-dụng là: ’L’, ’R’, ’L’, ’R’, ’L’, ’R’,... Nếu Position được trả ra không phải là một vị trí
-hợp lệ cho đối tượng này di chuyển thì trả về npos thuộc class Position*/
-
     if (moving_rule.length() == 0)
     {
         return Position::npos;
@@ -286,4 +279,141 @@ Position Criminal::getNextPosition()
     return next_pos;
 }
 
+ArrayMovingObject::ArrayMovingObject(int capacity)
+{
+    this->capacity = capacity;
+    arr_mv_objs = new MovingObject *[capacity];
+}
 
+ArrayMovingObject::~ArrayMovingObject()
+{
+    for (int i = 0; i < capacity; i++)
+    {
+        delete arr_mv_objs[i];
+    }
+    delete[] arr_mv_objs;
+}
+
+bool ArrayMovingObject::isFull() const
+{
+    if (count == capacity)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool ArrayMovingObject::add(MovingObject *mv_obj)
+{
+    if (isFull())
+    {
+        return false;
+    }
+    arr_mv_objs[count] = mv_obj;
+    count++;
+    return true;
+}
+
+MovingObject *ArrayMovingObject::get(int index) const
+{
+    if (index < 0 || index >= count)
+    {
+        return nullptr;
+    }
+    return arr_mv_objs[index];
+}
+
+string ArrayMovingObject::str() const
+{
+    /*ArrayMovingObject [ count =3; capacity =10; Criminal [ index =0; pos =(8 ,9) ]; Sherlock [ index =1; pos (1 ,4) ; moving_rule = RUU ]; Watson [ index =2; pos=(2 ,1) ; moving_rule = LU ]]*/
+    string res = "ArrayMovingObject [ count =" + to_string(count) + "; capacity =" + to_string(capacity) + "; ";
+    for (int i = 0; i < count; i++)
+    {
+        res += arr_mv_objs[i]->str() + "; ";
+    }
+}
+
+void extractNum(const string &input, int &value)
+{
+    string temp = input;
+    size_t pos = temp.find("=");
+    temp = temp.substr(pos + 1);
+    sscanf(temp.c_str(), "%d", &value);
+}
+
+void extractRC(const string &input, int &r, int &c)
+{
+    string temp = input;
+    size_t pos = temp.find("=");
+    temp = temp.substr(pos + 1);
+    sscanf(temp.c_str(), "(%d,%d)", &r, &c);
+}
+
+Configuration::Configuration(const string &filepath)
+{
+    // finish the constructor
+    int s = 0;
+    int &value = s;
+    ifstream ifs(filepath);
+    if (!ifs.is_open())
+    {
+        return;
+    }
+    string s1, s2, s3, s4, s5, s6, s7, s8;
+    ifs >> s1 >> s2 >> s3 >> s4 >> s5 >> s6;
+    extractNum(s1, value);
+    map_num_rows = value;
+    extractNum(s2, value);
+    map_num_cols = value;
+    extractNum(s3, value);
+    max_num_moving_objects = value;
+    extractNum(s4, value);
+    num_walls = value;
+    arr_walls = new Position[num_walls];
+    string line;
+    while (getline(ifs, line))
+    {
+        size_t pos = line.find("[");
+        line = line.substr(pos);
+        line = line.substr(1, line.size() - 2); // Remove brackets
+
+        stringstream ss(line);
+        string pair;
+        int i = 0;
+        while (getline(ss, pair, ';'))
+        {
+            // Process the pair string immediately
+            arr_walls[i] = Position(pair);
+            i++;
+        }
+    }
+    ifs >> s7 >> s8 >> num_fake_walls;
+    arr_fake_walls = new Position[num_fake_walls];
+    for (int i = 0; i < num_fake_walls; i++)
+    {
+        string s1, s2, s3;
+        int r, c;
+        ifs >> s1 >> s2 >> s3;
+        sscanf(s3.c_str(), "(%d,%d)", &r, &c);
+        arr_fake_walls[i] = Position(r, c);
+    }
+    ifs >> sherlock_init_hp >> sherlock_init_exp >> watson_init_hp >> watson_init_exp >> num_steps;
+    ifs >> sherlock_moving_rule >> watson_moving_rule;
+    int r, c;
+    ifs >> r >> c;
+    sherlock_init_pos = new Position(r, c);
+    ifs >> r >> c;
+    watson_init_pos = new Position(r, c);
+    ifs >> r >> c;
+    criminal_init_pos = new Position(r, c);
+    ifs.close();
+}
+
+Configuration::~Configuration()
+{
+    delete[] arr_walls;
+    delete[] arr_fake_walls;
+    delete sherlock_init_pos;
+    delete watson_init_pos;
+    delete criminal_init_pos;
+}
