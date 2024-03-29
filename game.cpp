@@ -102,9 +102,9 @@ trị cho hàng và cột.*/
 /*Phương thức isEqual có hai tham số truyền vào in_r và in_c biểu diễn cho một vị
 trí. isEqual trả về giá trị true nếu vị trí truyền vào trùng với vị trí của đối tượng này.
 Ngược lại, isEqual trả về false.*/
-bool Position::isEqual(int in_r, int in_c) const
+bool Position::isEqual(const Position &pos) const
 {
-    if (r == in_r && c == in_c)
+    if (r == pos.getRow() && c == pos.getCol())
         return true;
     return false;
 }
@@ -117,6 +117,13 @@ tính cùng tên. Riêng tham số name có giá trị mặc định là "".*/
     this->pos = pos;
     this->map = map;
     this->name = name;
+}
+MovingObject::MovingObject(const MovingObject &other)
+{
+    // Copy each member variable from `other` to `this`
+    this->index = other.index;
+    this->name = other.name;
+    // Add other member variables as needed
 }
 
 MovingObject::~MovingObject()
@@ -204,7 +211,7 @@ void Character::move()
 {
     // finish the method
     Position next_pos = getNextPosition();
-    if (next_pos.isEqual(-1, -1))
+    if (&next_pos == &Position::npos)
     {
         return;
     }
@@ -279,6 +286,26 @@ Position Criminal::getNextPosition()
     return next_pos;
 }
 
+void Criminal::move()
+{
+    // finish the method
+    Position next_pos = getNextPosition();
+    if (&next_pos == &Position::npos)
+    {
+        return;
+    }
+    pos = next_pos;
+    // after the criminal move 3 steps, create a new robot
+    if (countSteps % 3 == 0)
+    {
+        /*Nếu là robot đầu tiên được tạo ra trên bản đồ, đó sẽ là loại robot RobotC. Nếu không,
+ta xét khoảng cách từ Robot đến Sherlock và Watson:
+• Nếu khoảng cách đến Sherlock gần hơn: Tạo ra loại robot RobotS
+• Khoảng cách đến Watson gần hơn: Tạo ra loại robot RobotW
+• Khoảng cách đến Sherlock và Watson là bằng nhau: Tạo ra loại robot RobotSW*/
+    }
+}
+
 ArrayMovingObject::ArrayMovingObject(int capacity)
 {
     this->capacity = capacity;
@@ -309,7 +336,7 @@ bool ArrayMovingObject::add(MovingObject *mv_obj)
     {
         return false;
     }
-    arr_mv_objs[count] = mv_obj;
+    arr_mv_objs[count] = *mv_obj;
     count++;
     return true;
 }
@@ -331,6 +358,8 @@ string ArrayMovingObject::str() const
     {
         res += arr_mv_objs[i]->str() + "; ";
     }
+    res += "]";
+    return res;
 }
 
 void extractNum(const string &input, int &value)
@@ -341,12 +370,12 @@ void extractNum(const string &input, int &value)
     sscanf(temp.c_str(), "%d", &value);
 }
 
-void extractRC(const string &input, int &r, int &c)
+void extractCoor(const string &input, string &value)
 {
     string temp = input;
     size_t pos = temp.find("=");
     temp = temp.substr(pos + 1);
-    sscanf(temp.c_str(), "(%d,%d)", &r, &c);
+    value = temp;
 }
 
 Configuration::Configuration(const string &filepath)
@@ -354,58 +383,138 @@ Configuration::Configuration(const string &filepath)
     // finish the constructor
     int s = 0;
     int &value = s;
+    int r, c;
     ifstream ifs(filepath);
     if (!ifs.is_open())
     {
         return;
     }
-    string s1, s2, s3, s4, s5, s6, s7, s8;
-    ifs >> s1 >> s2 >> s3 >> s4 >> s5 >> s6;
-    extractNum(s1, value);
-    map_num_rows = value;
-    extractNum(s2, value);
-    map_num_cols = value;
-    extractNum(s3, value);
-    max_num_moving_objects = value;
-    extractNum(s4, value);
-    num_walls = value;
-    arr_walls = new Position[num_walls];
-    string line;
-    while (getline(ifs, line))
+    string arr[12];
+    for (int i = 0; i < 12; i++)
     {
-        size_t pos = line.find("[");
-        line = line.substr(pos);
-        line = line.substr(1, line.size() - 2); // Remove brackets
-
-        stringstream ss(line);
-        string pair;
-        int i = 0;
-        while (getline(ss, pair, ';'))
+        ifs >> arr[i];
+    }
+    for (int i = 0; i < 12; i++)
+    {
+        string s2;
+        if (arr[i].find("MAP_NUM_ROWS"))
         {
-            // Process the pair string immediately
-            arr_walls[i] = Position(pair);
-            i++;
+            extractNum(arr[i], value);
+            map_num_rows = value;
+        }
+        else if (arr[i].find("MAP_NUM_COLS"))
+        {
+            extractNum(arr[i], value);
+            map_num_cols = value;
+        }
+        else if (arr[i].find("MAX_NUM_MOVING_OBJECTS"))
+        {
+            extractNum(arr[i], value);
+            max_num_moving_objects = value;
+        }
+        else if (arr[i].find("NUM_WALLS"))
+        {
+            extractNum(arr[i], value);
+            num_walls = value;
+        }
+        else if (arr[i].find("ARRAY_WALLS"))
+        {
+            string line;
+
+            while (getline(ifs, line))
+            {
+                // remove ARRAY_WALLS first
+                size_t pos = line.find("[");
+                line = line.substr(pos);
+                line = line.substr(1, line.size() - 2); // Remove brackets
+
+                stringstream ss(line);
+                string pair;
+                int i = 0;
+                while (getline(ss, pair, ';'))
+                {
+                    // Process the pair string immediately
+                    arr_walls[i] = Position(pair);
+                }
+            }
+        }
+        else if (arr[i].find("NUM_FAKE_WALLS"))
+        {
+            extractNum(arr[i], value);
+            num_fake_walls = value;
+        }
+        else if (arr[i].find("ARRAY_FAKE_WALLS"))
+        {
+            string line;
+
+            while (getline(ifs, line))
+            {
+                // remove ARRAY_WALLS first
+                size_t pos = line.find("[");
+                line = line.substr(pos);
+                line = line.substr(1, line.size() - 2); // Remove brackets
+
+                stringstream ss(line);
+                string pair;
+                int i = 0;
+                while (getline(ss, pair, ';'))
+                {
+                    // Process the pair string immediately
+                    arr_fake_walls[i] = Position(pair);
+                }
+            }
+        }
+        else if (arr[i].find("SHERLOCK_INIT_HP"))
+        {
+            extractNum(arr[i], value);
+            sherlock_init_hp = value;
+        }
+        else if (arr[i].find("SHERLOCK_INIT_EXP"))
+        {
+            extractNum(arr[i], value);
+            sherlock_init_exp = value;
+        }
+        else if (arr[i].find("WATSON_INIT_HP"))
+        {
+            extractNum(arr[i], value);
+            watson_init_hp = value;
+        }
+        else if (arr[i].find("WATSON_INIT_EXP"))
+        {
+            extractNum(arr[i], value);
+            watson_init_exp = value;
+        }
+        else if (arr[i].find("SHERLOCK_INIT_POS"))
+        {
+            extractCoor(arr[i], s2);
+            sherlock_init_pos = new Position(s2);
+        }
+        else if (arr[i].find("WATSON_INIT_POS"))
+        {
+            extractCoor(arr[i], s2);
+            watson_init_pos = new Position(s2);
+        }
+        else if (arr[i].find("CRIMINAL_INIT_POS"))
+        {
+            extractCoor(arr[i], s2);
+            criminal_init_pos = new Position(s2);
+        }
+        else if (arr[i].find("SHERLOCK_MOVING_RULE"))
+        {
+            extractCoor(arr[i], s2);
+            sherlock_moving_rule = s2;
+        }
+        else if (arr[i].find("WATSON_MOVING_RULE"))
+        {
+            extractCoor(arr[i], s2);
+            watson_moving_rule = s2;
+        }
+        else if (arr[i].find("NUM_STEPS"))
+        {
+            extractNum(arr[i], value);
+            num_steps = value;
         }
     }
-    ifs >> s7 >> s8 >> num_fake_walls;
-    arr_fake_walls = new Position[num_fake_walls];
-    for (int i = 0; i < num_fake_walls; i++)
-    {
-        string s1, s2, s3;
-        int r, c;
-        ifs >> s1 >> s2 >> s3;
-        sscanf(s3.c_str(), "(%d,%d)", &r, &c);
-        arr_fake_walls[i] = Position(r, c);
-    }
-    ifs >> sherlock_init_hp >> sherlock_init_exp >> watson_init_hp >> watson_init_exp >> num_steps;
-    ifs >> sherlock_moving_rule >> watson_moving_rule;
-    int r, c;
-    ifs >> r >> c;
-    sherlock_init_pos = new Position(r, c);
-    ifs >> r >> c;
-    watson_init_pos = new Position(r, c);
-    ifs >> r >> c;
-    criminal_init_pos = new Position(r, c);
     ifs.close();
 }
 
@@ -416,4 +525,144 @@ Configuration::~Configuration()
     delete sherlock_init_pos;
     delete watson_init_pos;
     delete criminal_init_pos;
+}
+
+string Configuration::str() const
+{
+    /*Configuration[
+    MAP_NUM_ROWS=10
+    MAP_NUM_COLS=10
+    MAX_NUM_MOVING_OBJECTS=10
+    NUM_WALLS=3
+    ARRAY_WALLS=[(1,2);(2,3);(3,4)]
+    NUM_FAKE_WALLS=1
+    ARRAY_FAKE_WALLS=[(4,5)]
+    SHERLOCK_MOVING_RULE=RUU
+    SHERLOCK_INIT_POS=(1,3)
+    SHERLOCK_INIT_HP=250
+    SHERLOCK_INIT_EXP=500
+    WATSON_MOVING_RULE=LU
+    WATSON_INIT_POS=(2,1)
+    WATSON_INIT_HP=300
+    WATSON_INIT_EXP=350
+    CRIMINAL_INIT_POS=(7,9)
+    NUM_STEPS=100]*/
+    string res = "Configuration[\n";
+    res += "MAP_NUM_ROWS=" + to_string(map_num_rows) + "\n";
+    res += "MAP_NUM_COLS=" + to_string(map_num_cols) + "\n";
+    res += "MAX_NUM_MOVING_OBJECTS=" + to_string(max_num_moving_objects) + "\n";
+    res += "NUM_WALLS=" + to_string(num_walls) + "\n";
+    res += "ARRAY_WALLS=[";
+    for (int i = 0; i < num_walls; i++)
+    {
+        res += arr_walls[i].str() + ";";
+    }
+    res += "]\n";
+    res += "NUM_FAKE_WALLS=" + to_string(num_fake_walls) + "\n";
+    res += "ARRAY_FAKE_WALLS=[";
+    for (int i = 0; i < num_fake_walls; i++)
+    {
+        res += arr_fake_walls[i].str() + ";";
+    }
+    res += "]\n";
+    res += "SHERLOCK_MOVING_RULE=" + sherlock_moving_rule + "\n";
+    res += "SHERLOCK_INIT_POS=" + sherlock_init_pos->str() + "\n";
+    res += "SHERLOCK_INIT_HP=" + to_string(sherlock_init_hp) + "\n";
+    res += "SHERLOCK_INIT_EXP=" + to_string(sherlock_init_exp) + "\n";
+    res += "WATSON_MOVING_RULE=" + watson_moving_rule + "\n";
+    res += "WATSON_INIT_POS=" + watson_init_pos->str() + "\n";
+    res += "WATSON_INIT_HP=" + to_string(watson_init_hp) + "\n";
+    res += "WATSON_INIT_EXP=" + to_string(watson_init_exp) + "\n";
+    res += "CRIMINAL_INIT_POS=" + criminal_init_pos->str() + "\n";
+    res += "NUM_STEPS=" + to_string(num_steps) + "\n";
+    res += "]";
+    return res;
+}
+
+Robot::Robot(int index, const Position &init_pos, Map *map, RobotType robot_type) : MovingObject(index, init_pos, map, name)
+{
+    this->robot_type = robot_type;
+}
+
+Position Robot::getCurrentPosition()
+{
+    return pos;
+}
+
+void Robot::move()
+{
+    Position next_pos = getNextPosition();
+    if (&next_pos == &Position::npos)
+    {
+        return;
+    }
+    pos = next_pos;
+}
+
+RobotC::RobotC(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal) : Robot(index, init_pos, map, C)
+{
+    this->criminal = criminal;
+};
+
+Position RobotC::getNextPosition()
+{
+    // go to next_pos with criminal
+    Position next_pos = criminal->getCurrentPosition();
+    return next_pos;
+};
+
+RobotS::RobotS(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal, Sherlock *Sherlock) : Robot(index, init_pos, map, S)
+{
+    this->sherlock = Sherlock;
+    this->criminal = criminal;
+};
+
+Position RobotS::getNextPosition()
+{
+    /*Di chuyển đến vị trí tiếp theo cách ban đầu 1 đơn vị và gần nhất với vị trí
+tiếp theo của Sherlock. Lưu ý khi nói vị trí cách vị trí ban đầu 1 đơn vị thì khoảng
+cách được nói đến là khoảng cách Manhattan. Nếu có nhiều vị trí gần nhất thì thứ
+tự lựa chọn theo chiều quay của kim đồng hồ , bắt đầu từ hướng đi lên, và
+lựa chọn vị trí đầu tiên*/
+    Position next_pos = pos;
+    int min_distance = 1000000;
+    Position arr[4];
+    arr[0] = Position(pos.getRow() - 1, pos.getCol());
+    arr[1] = Position(pos.getRow(), pos.getCol() + 1);
+    arr[2] = Position(pos.getRow() + 1, pos.getCol());
+    arr[3] = Position(pos.getRow(), pos.getCol() - 1);
+    for (int i = 0; i < 4; i++)
+    {
+        if (map->isValid(arr[i], this))
+        {
+            int distance = abs(arr[i].getRow() - sherlock->getCurrentPosition().getRow()) + abs(arr[i].getCol() - sherlock->getCurrentPosition().getCol());
+            if (distance < min_distance)
+            {
+                min_distance = distance;
+                next_pos = arr[i];
+            }
+            else if (distance == min_distance)
+            {
+                continue;
+            }
+        }
+    }
+    return next_pos;
+};
+
+RobotW::RobotW(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal, Watson *watson) : Robot(index, init_pos, map, W)
+{
+    this->watson = watson;
+    this->criminal = criminal;
+};
+
+RobotSW::RobotSW(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal, Sherlock *Sherlock, Watson *watson) : Robot(index, init_pos, map, SW)
+{
+    this->sherlock = Sherlock;
+    this->watson = watson;
+    this->criminal = criminal;
+};
+
+int main()
+{
 }

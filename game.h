@@ -115,7 +115,7 @@ public:
         return "(" + to_string(r) + "," + to_string(c) + ")";
     };
 
-    bool isEqual(int in_r, int in_c) const;
+    bool isEqual(const Position &pos) const;
 };
 
 class MovingObject
@@ -179,17 +179,95 @@ class Criminal /* TODO */ : public Character
 private:
     Sherlock *sherlock;
     Watson *watson;
+    int countSteps;
 
 public:
     Criminal(int index, const Position &init_pos, Map *map, Sherlock *sherlock, Watson *watson);
     string str() const;
     Position getNextPosition();
+    void move();
+    int getCountSteps() const
+    {
+        return countSteps;
+    };
+};
+
+class Robot : public MovingObject
+{
+protected:
+    RobotType robot_type;
+    BaseItem *item;
+    Criminal *criminal;
+    Sherlock *sherlock;
+    Watson *watson;
+    int countRobots;
+
+public:
+    Robot(int index, const Position &init_pos, Map *map, RobotType robot_type);
+    ~Robot();
+    virtual Position getNextPosition() = 0;
+    Position getCurrentPosition();
+    void move();
+};
+
+class RobotC : public Robot
+{
+private:
+public:
+    RobotC(int index, const Position &init_pos, Map *map,
+           RobotType robot_type, Criminal *criminal);
+    Position getNextPosition();
+    string str() const;
+};
+
+class RobotS : public Robot
+{
+private:
+public:
+    RobotS(int index, const Position &init_pos, Map *map,
+           RobotType robot_type, Criminal *criminal, Sherlock *Sherlock);
+    Position getNextPosition();
+    string str() const;
+};
+
+class RobotW : public Robot
+{
+private:
+public:
+    RobotW(int index, const Position &init_pos, Map *map,
+           RobotType robot_type, Criminal *criminal, Watson *watson);
+    Position getNextPosition();
+    string str() const;
+};
+
+class RobotSW : public Robot
+{
+private:
+public:
+    RobotSW(int index, const Position &init_pos, Map *map,
+            RobotType robot_type, Criminal *criminal, Sherlock *sherlock, Watson *watson);
+    Position getNextPosition();
+    Position getCurrentPosition() const;
+    string str() const;
+};
+
+class BaseItem
+{
+protected:
+    ItemType item_type;
+    int value;
+
+public:
+    BaseItem(ItemType item_type, int value);
+    virtual ~BaseItem();
+    virtual bool canUse(Character *obj, Robot *robot) = 0;
+    virtual void use(Character *obj, Robot *robot) = 0;
 };
 
 class ArrayMovingObject
 {
 private:
-    MovingObject **arr_mv_objs;
+    MovingObject *arr_mv_objs;
     int capacity;
     int count;
 
@@ -242,11 +320,11 @@ public:
 
     void printResult() const
     {
-        if (sherlock->getCurrentPosition().isEqual(criminal->getCurrentPosition().getRow(), criminal->getCurrentPosition().getCol()))
+        if (sherlock->getCurrentPosition().isEqual(criminal->getCurrentPosition()))
         {
             cout << "Sherlock caught the criminal" << endl;
         }
-        else if (watson->getCurrentPosition().isEqual(criminal->getCurrentPosition().getRow(), criminal->getCurrentPosition().getCol()))
+        else if (watson->getCurrentPosition().isEqual(criminal->getCurrentPosition()))
         {
             cout << "Watson caught the criminal" << endl;
         }
