@@ -115,5 +115,18 @@ int main(int argc, const char *argv[])
     // TestStudyInPink::satc_01();
     // TestStudyInPink::satc_02();
     // TestStudyInPink::satc_03();
+    Position arr_walls[3] = {Position(1, 2), Position(2, 3), Position(3, 4)};
+    Position arr_fake_walls[1] = {Position(4, 5)};
+    Map *map = new Map(10, 10, 3, arr_walls, 1, arr_fake_walls);
+    Criminal *criminal = new Criminal(0, Position(7, 9), map, nullptr, nullptr);
+    RobotC *robot = new RobotC(0, Position(7, 9), map, criminal);
+    cout << robot->str() << endl;
+    cout << robot->getDistance(criminal) << endl;
+    cout << robot->getCurrentPosition().str() << endl;
+    robot->move();
+    cout << robot->getCurrentPosition().str() << endl;
+    delete criminal;
+    delete map;
+    delete robot;
     return 0;
 }

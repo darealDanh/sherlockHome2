@@ -19,6 +19,25 @@
 
 using namespace std;
 
+class MovingObject;
+class Position;
+class Configuration;
+class Map;
+
+class Criminal;
+class RobotS;
+class RobotW;
+class RobotSW;
+class RobotC;
+
+class ArrayMovingObject;
+class StudyPinkProgram;
+
+class BaseItem;
+class BaseBag;
+class SherlockBag;
+class WatsonBag;
+
 class TestStudyInPink;
 
 enum ItemType
@@ -49,10 +68,7 @@ protected:
     ElementType type;
 
 public:
-    MapElement(ElementType in_type)
-    {
-        this->type = in_type;
-    };
+    MapElement(ElementType in_type);
     virtual ~MapElement();
     virtual ElementType getType() const;
 };
@@ -77,20 +93,6 @@ private:
 public:
     FakeWall(int r, int c);
     int getReqExp() const;
-};
-
-class Map
-{
-private:
-    int num_rows, num_cols;
-    MapElement ***map;
-
-public:
-    Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int num_fake_walls, Position *array_fake_walls);
-    ~Map();
-    bool isValid(const Position &pos, MovingObject *mv_obj) const;
-    int getNumRow() const { return num_rows; };
-    int getNumCol() const { return num_cols; };
 };
 
 class Position
@@ -120,6 +122,8 @@ public:
 
 class MovingObject
 {
+    friend class TestStudyInPink;
+
 protected:
     int index;
     Position pos;
@@ -129,7 +133,7 @@ protected:
     int exp;
 
 public:
-    MovingObject(int index, const Position pos, Map *map, const string &name = "");
+    MovingObject(int index, const Position pos, Map *map, const string &name);
     virtual ~MovingObject();
     virtual Position getNextPosition() = 0;
     virtual Position getCurrentPosition() const = 0;
@@ -139,6 +143,22 @@ public:
     string getName() const;
     int getHP() const;
     int getExp() const;
+    void setHP(int hp);
+    void setExp(int exp);
+};
+
+class Map
+{
+private:
+    int num_rows, num_cols;
+    MapElement ***map;
+
+public:
+    Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int num_fake_walls, Position *array_fake_walls);
+    ~Map();
+    bool isValid(const Position &pos, MovingObject *mv_obj) const;
+    int getNumRow() const { return num_rows; };
+    int getNumCol() const { return num_cols; };
 };
 
 class Character : public MovingObject
@@ -147,8 +167,7 @@ class Character : public MovingObject
 
 protected:
     string moving_rule;
-    int hp;
-    int exp;
+    BaseBag *bag;
 
 public:
     Character(int index, const Position &init_pos, Map *map, const string &name);
@@ -157,9 +176,17 @@ public:
     virtual Position getCurrentPosition() const;
     virtual void move();
     virtual string str() const = 0;
+    BaseBag *getBag() const
+    {
+        return bag;
+    };
 };
 class Sherlock /* TODO */ : public Character
 {
+private:
+    int hp;
+    int exp;
+
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
@@ -168,6 +195,10 @@ public:
 
 class Watson /* TODO */ : public Character
 {
+private:
+    int hp;
+    int exp;
+
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
@@ -180,16 +211,19 @@ private:
     Sherlock *sherlock;
     Watson *watson;
     int countSteps;
+    Robot *robot;
 
 public:
     Criminal(int index, const Position &init_pos, Map *map, Sherlock *sherlock, Watson *watson);
     string str() const;
+    Position getCurrentPosition() const;
     Position getNextPosition();
     void move();
     int getCountSteps() const
     {
         return countSteps;
     };
+    Robot *getRobot() const;
 };
 
 class Robot : public MovingObject
@@ -197,77 +231,182 @@ class Robot : public MovingObject
 protected:
     RobotType robot_type;
     BaseItem *item;
-    Criminal *criminal;
-    Sherlock *sherlock;
-    Watson *watson;
-    int countRobots;
 
 public:
     Robot(int index, const Position &init_pos, Map *map, RobotType robot_type);
     ~Robot();
     virtual Position getNextPosition() = 0;
-    Position getCurrentPosition();
+    Position getCurrentPosition() const;
     void move();
+    virtual int getDistance() const;
+    static int countRobots;
+    virtual BaseItem *getItem();
+    int getRobotType() const
+    {
+        return robot_type;
+    };
 };
 
 class RobotC : public Robot
 {
 private:
+    Criminal *criminal;
+
 public:
-    RobotC(int index, const Position &init_pos, Map *map,
-           RobotType robot_type, Criminal *criminal);
+    RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal);
     Position getNextPosition();
     string str() const;
+    int getDistance(Character *character) const;
 };
 
 class RobotS : public Robot
 {
 private:
+    Sherlock *sherlock;
+    Criminal *criminal;
+
 public:
-    RobotS(int index, const Position &init_pos, Map *map,
-           RobotType robot_type, Criminal *criminal, Sherlock *Sherlock);
+    RobotS(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock);
     Position getNextPosition();
     string str() const;
+    int getDistance() const;
 };
 
 class RobotW : public Robot
 {
 private:
+    Watson *watson;
+    Criminal *criminal;
+
 public:
-    RobotW(int index, const Position &init_pos, Map *map,
-           RobotType robot_type, Criminal *criminal, Watson *watson);
+    RobotW(int index, const Position &init_pos, Map *map, Criminal *criminal, Watson *watson);
     Position getNextPosition();
     string str() const;
+    int getDistance() const;
 };
 
 class RobotSW : public Robot
 {
 private:
+    Criminal *criminal;
+    Sherlock *sherlock;
+    Watson *watson;
+
 public:
-    RobotSW(int index, const Position &init_pos, Map *map,
-            RobotType robot_type, Criminal *criminal, Sherlock *sherlock, Watson *watson);
+    RobotSW(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *sherlock, Watson *watson);
     Position getNextPosition();
     Position getCurrentPosition() const;
     string str() const;
+    int getDistance() const;
 };
 
 class BaseItem
 {
 protected:
     ItemType item_type;
-    int value;
+    Character *obj;
+    Robot *robot;
 
 public:
+    int value;
+    BaseItem *next;
     BaseItem(ItemType item_type, int value);
     virtual ~BaseItem();
     virtual bool canUse(Character *obj, Robot *robot) = 0;
     virtual void use(Character *obj, Robot *robot) = 0;
+    ItemType getItemType() const;
+};
+
+class MagicBook : public BaseItem
+{
+public:
+    MagicBook();
+    bool canUse(Character *obj, Robot *robot);
+    void use(Character *obj, Robot *robot);
+};
+
+class EnergyDrink : public BaseItem
+{
+public:
+    EnergyDrink();
+    bool canUse(Character *obj, Robot *robot);
+    void use(Character *obj, Robot *robot);
+};
+
+class FirstAid : public BaseItem
+{
+public:
+    FirstAid();
+    bool canUse(Character *obj, Robot *robot);
+    void use(Character *obj, Robot *robot);
+};
+
+class ExemptionCard : public BaseItem
+{
+public:
+    ExemptionCard();
+    bool canUse(Character *obj, Robot *robot);
+    void use(Character *obj, Robot *robot);
+};
+
+class PassingCard : public BaseItem
+{
+private:
+    string challenges;
+
+public:
+    PassingCard(const string &challenges);
+    bool canUse(Character *obj, Robot *robot);
+    void use(Character *obj, Robot *robot);
+};
+
+class BaseBag
+{
+protected:
+    BaseItem *head;
+    BaseItem *tail;
+    Character *character;
+    int countItem;
+
+public:
+    BaseBag(Character *character);
+    ~BaseBag();
+    virtual bool insert(BaseItem *item);
+    virtual BaseItem *get();
+    virtual BaseItem *get(ItemType itemType);
+    virtual string str() const;
+};
+
+class WatsonBag : public BaseBag
+{
+private:
+    Watson *watson;
+
+public:
+    WatsonBag(Watson *watson);
+    bool insert(BaseItem *item);
+    BaseItem *get();
+    BaseItem *get(ItemType itemType);
+    string str() const;
+};
+
+class SherlockBag : public BaseBag
+{
+private:
+    Sherlock *sherlock;
+
+public:
+    SherlockBag(Sherlock *sherlock);
+    bool insert(BaseItem *item);
+    BaseItem *get();
+    BaseItem *get(ItemType itemType);
+    string str() const;
 };
 
 class ArrayMovingObject
 {
 private:
-    MovingObject *arr_mv_objs;
+    MovingObject **arr_mv_objs;
     int capacity;
     int count;
 

@@ -49,6 +49,44 @@ Map::Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int n
     }
 }
 
+MovingObject::MovingObject(int index, const Position pos, Map *map, const string &name)
+{
+    /*Phương thức gán giá trị của tham số cho thuộc
+tính cùng tên. Riêng tham số name có giá trị mặc định là "".*/
+    this->index = index;
+    this->pos = pos;
+    this->map = map;
+    this->name = name;
+}
+
+MovingObject::~MovingObject()
+{
+    /*Phương thức hủy giải phóng bộ nhớ đã cấp phát cho thuộc tính map.*/
+    delete map;
+}
+
+Position MovingObject::getCurrentPosition() const
+{
+    return pos;
+}
+
+const Position Position::npos(-1, -1);
+
+string MovingObject::getName() const
+{
+    return name;
+}
+
+void MovingObject::setHP(int hp)
+{
+    this->hp = hp;
+}
+
+void MovingObject::setExp(int exp)
+{
+    this->exp = exp;
+}
+
 Map::~Map()
 {
     for (int i = 0; i < num_rows; i++)
@@ -70,7 +108,7 @@ bool Map::isValid(const Position &pos, MovingObject *mv_obj) const
     }
     if (map[pos.getRow()][pos.getCol()]->getType() == FAKE_WALL)
     {
-        if (mv_obj->getName() == "Sherlock" || mv_obj->getName() == "Criminal")
+        if (mv_obj->getName() == "Sherlock" || mv_obj->getName() == "Criminal" || mv_obj->getName() == "RobotC" || mv_obj->getName() == "RobotS" || mv_obj->getName() == "RobotW" || mv_obj->getName() == "RobotSW")
         {
             return true;
         }
@@ -109,53 +147,13 @@ bool Position::isEqual(const Position &pos) const
     return false;
 }
 
-MovingObject::MovingObject(int index, const Position pos, Map *map, const string &name = "")
-{
-    /*Phương thức gán giá trị của tham số cho thuộc
-tính cùng tên. Riêng tham số name có giá trị mặc định là "".*/
-    this->index = index;
-    this->pos = pos;
-    this->map = map;
-    this->name = name;
-}
-MovingObject::MovingObject(const MovingObject &other)
-{
-    // Copy each member variable from `other` to `this`
-    this->index = other.index;
-    this->name = other.name;
-    // Add other member variables as needed
-}
-
-MovingObject::~MovingObject()
-{
-    /*Phương thức hủy giải phóng bộ nhớ đã cấp phát cho thuộc tính map.*/
-    delete map;
-}
-
-Position MovingObject::getNextPosition()
-{
-}
-
-Position MovingObject::getCurrentPosition() const
-{
-    return pos;
-}
-
-const Position Position::npos(-1, -1);
-
-string MovingObject::getName() const
-{
-    return name;
-}
-
-// isValid
-
 Sherlock::Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, pos, map, "Sherlock")
 {
     // finish the constructor
     this->moving_rule = moving_rule;
     this->hp = init_hp;
     this->exp = init_exp;
+    bag = new SherlockBag(this);
 }
 
 Position Character::getCurrentPosition() const
@@ -168,7 +166,7 @@ Position Character::getNextPosition()
     Position next_pos = pos;
     if (moving_rule.length() == 0)
     {
-        return Position::npos;
+        next_pos = Position::npos;
     }
     int i = 0;
     while (true)
@@ -200,11 +198,11 @@ Position Character::getNextPosition()
         }
         else
         {
-            return pos;
+            next_pos = Position::npos;
         }
         i++;
     }
-    return Position::npos;
+    return next_pos;
 }
 
 void Character::move()
@@ -231,6 +229,7 @@ Watson::Watson(int index, const string &moving_rule, const Position &init_pos, M
     this->moving_rule = moving_rule;
     this->hp = init_hp;
     this->exp = init_exp;
+    bag = new WatsonBag(this);
 }
 
 string Watson::str() const
@@ -283,32 +282,63 @@ Position Criminal::getNextPosition()
             }
         }
     }
+    if (&next_pos == &pos)
+    {
+        next_pos = Position::npos;
+    }
     return next_pos;
 }
 
 void Criminal::move()
 {
-    // finish the method
-    Position next_pos = getNextPosition();
-    if (&next_pos == &Position::npos)
-    {
-        return;
-    }
-    pos = next_pos;
-    // after the criminal move 3 steps, create a new robot
-    if (countSteps % 3 == 0)
+    if (countSteps == 3)
     {
         /*Nếu là robot đầu tiên được tạo ra trên bản đồ, đó sẽ là loại robot RobotC. Nếu không,
 ta xét khoảng cách từ Robot đến Sherlock và Watson:
 • Nếu khoảng cách đến Sherlock gần hơn: Tạo ra loại robot RobotS
 • Khoảng cách đến Watson gần hơn: Tạo ra loại robot RobotW
 • Khoảng cách đến Sherlock và Watson là bằng nhau: Tạo ra loại robot RobotSW*/
+        if (Robot::countRobots == 0)
+        {
+            *robot = RobotC(0, pos, map, this);
+        }
+        else
+        {
+            int distanceS = abs(pos.getRow() - sherlock->getCurrentPosition().getRow()) + abs(pos.getCol() - sherlock->getCurrentPosition().getCol());
+            int distanceW = abs(pos.getRow() - watson->getCurrentPosition().getRow()) + abs(pos.getCol() - watson->getCurrentPosition().getCol());
+            if (distanceS < distanceW)
+            {
+                *robot = RobotS(0, pos, map, this, sherlock);
+            }
+            else if (distanceS > distanceW)
+            {
+                *robot = RobotW(0, pos, map, this, watson);
+            }
+            else
+            {
+                *robot = RobotSW(0, pos, map, this, sherlock, watson);
+            }
+        }
+        countSteps = 0;
     }
+    Position next_pos = getNextPosition();
+    if (&next_pos == &Position::npos)
+    {
+        return;
+    }
+    pos = next_pos;
+}
+
+Robot *Criminal::getRobot() const
+{
+    return robot;
 }
 
 ArrayMovingObject::ArrayMovingObject(int capacity)
 {
     this->capacity = capacity;
+    this->count = 0;
+    // create an new array of MovingObject with the size of capacity
     arr_mv_objs = new MovingObject *[capacity];
 }
 
@@ -336,7 +366,7 @@ bool ArrayMovingObject::add(MovingObject *mv_obj)
     {
         return false;
     }
-    arr_mv_objs[count] = *mv_obj;
+    arr_mv_objs[count] = mv_obj;
     count++;
     return true;
 }
@@ -579,12 +609,69 @@ string Configuration::str() const
     return res;
 }
 
-Robot::Robot(int index, const Position &init_pos, Map *map, RobotType robot_type) : MovingObject(index, init_pos, map, name)
+Robot::Robot(int index, const Position &init_pos, Map *map, RobotType robot_type) : MovingObject(index, init_pos, map, "Robot")
 {
     this->robot_type = robot_type;
-}
+    /*Gọi vị trí tạo ra robot có toạ độ là (i,j) với i là chỉ số hàng, j là chỉ số cột.
+Với p = i ∗ j. Gọi s số chủ đạo của p . Ta định nghĩa số chủ đạo của một số là giá trị tổng
+các chữ số, cho đến khi giá trị tổng đó là số có 1 chữ số*/
+    int p = init_pos.getRow() * init_pos.getCol();
+    int t = (init_pos.getRow() * 11 + init_pos.getCol()) % 4;
+    int s = 0;
+    while (p > 0)
+    {
+        s += p % 10;
+        p /= 10;
+    }
+    while (s >= 10)
+    {
+        p = s;
+        s = 0;
+        while (p > 0)
+        {
+            s += p % 10;
+            p /= 10;
+        }
+    }
+    if (s >= 0 && s <= 1)
+    {
+        *item = MagicBook();
+    }
+    else if (s >= 2 && s <= 3)
+    {
+        *item = EnergyDrink();
+    }
+    else if (s >= 4 && s <= 5)
+    {
+        *item = FirstAid();
+    }
+    else if (s >= 6 && s <= 7)
+    {
+        *item = ExemptionCard();
+    }
+    else if (s >= 8 && s <= 9)
+    {
+        switch (t)
+        {
+        case 0:
+            *item = PassingCard("RobotS");
+            break;
+        case 1:
+            *item = PassingCard("RobotC");
+            break;
+        case 2:
+            *item = PassingCard("RobotSW");
+            break;
+        case 3:
+            *item = PassingCard("all");
+            break;
 
-Position Robot::getCurrentPosition()
+        default:
+            break;
+        }
+    }
+};
+Position Robot::getCurrentPosition() const
 {
     return pos;
 }
@@ -599,22 +686,54 @@ void Robot::move()
     pos = next_pos;
 }
 
-RobotC::RobotC(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal) : Robot(index, init_pos, map, C)
+int Robot::countRobots = 0;
+
+BaseItem *Robot::getItem()
+{
+    return item;
+}
+
+RobotC::RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal) : Robot(index, init_pos, map, C)
 {
     this->criminal = criminal;
+    countRobots++;
 };
 
 Position RobotC::getNextPosition()
 {
     // go to next_pos with criminal
     Position next_pos = criminal->getCurrentPosition();
+    if (&next_pos == &pos)
+    {
+        next_pos = Position::npos;
+    }
     return next_pos;
 };
 
-RobotS::RobotS(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal, Sherlock *Sherlock) : Robot(index, init_pos, map, S)
+string RobotC::str() const
+{
+    // Robot[pos=<pos>;type=<robot_type>;dist=<empty>]
+    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=]";
+}
+
+int RobotC::getDistance(Character *character) const
+{
+    /*Riêng robot loại C cung cấp 2 phương thức tính toán khoảng cách đến
+Sherlock hoặc đến Watson dựa trên 1 tham số đầu vào là con trỏ Sherlock* sherlock
+hay Watson* watson.*/
+    return abs(pos.getRow() - character->getCurrentPosition().getRow()) + abs(pos.getCol() - character->getCurrentPosition().getCol());
+};
+
+RobotS::RobotS(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock) : Robot(index, init_pos, map, S)
 {
     this->sherlock = Sherlock;
     this->criminal = criminal;
+    countRobots++;
+};
+
+int RobotS::getDistance() const
+{
+    return abs(pos.getRow() - sherlock->getCurrentPosition().getRow()) + abs(pos.getCol() - sherlock->getCurrentPosition().getCol());
 };
 
 Position RobotS::getNextPosition()
@@ -647,22 +766,457 @@ lựa chọn vị trí đầu tiên*/
             }
         }
     }
+    if (&next_pos == &pos)
+    {
+        next_pos = Position::npos;
+    }
     return next_pos;
 };
 
-RobotW::RobotW(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal, Watson *watson) : Robot(index, init_pos, map, W)
+string RobotS::str() const
+{
+    // Robot[pos=<pos>;type=<robot_type>;dist=<dist>]
+    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
+}
+
+RobotW::RobotW(int index, const Position &init_pos, Map *map, Criminal *criminal, Watson *watson) : Robot(index, init_pos, map, W)
 {
     this->watson = watson;
     this->criminal = criminal;
+    countRobots++;
 };
 
-RobotSW::RobotSW(int index, const Position &init_pos, Map *map, RobotType robot_type, Criminal *criminal, Sherlock *Sherlock, Watson *watson) : Robot(index, init_pos, map, SW)
+Position RobotW::getNextPosition()
+{
+    /*Di chuyển đến vị trí tiếp theo cách ban đầu 1 đơn vị và gần nhất với vị
+trí tiếp theo của Watson. Nếu có nhiều vị trí phù hợp thì thứ tự lựa chọn như nếu
+trong RobotS*/
+    Position next_pos = pos;
+    int min_distance = 1000000;
+    Position arr[4];
+    arr[0] = Position(pos.getRow() - 1, pos.getCol());
+    arr[1] = Position(pos.getRow(), pos.getCol() + 1);
+    arr[2] = Position(pos.getRow() + 1, pos.getCol());
+    arr[3] = Position(pos.getRow(), pos.getCol() - 1);
+    for (int i = 0; i < 4; i++)
+    {
+        if (map->isValid(arr[i], this))
+        {
+            int distance = abs(arr[i].getRow() - watson->getCurrentPosition().getRow()) + abs(arr[i].getCol() - watson->getCurrentPosition().getCol());
+            if (distance < min_distance)
+            {
+                min_distance = distance;
+                next_pos = arr[i];
+            }
+            else if (distance == min_distance)
+            {
+                continue;
+            }
+        }
+    }
+    if (&next_pos == &pos)
+    {
+        next_pos = Position::npos;
+    }
+    return next_pos;
+}
+
+int RobotW::getDistance() const
+{
+    return abs(pos.getRow() - watson->getCurrentPosition().getRow()) + abs(pos.getCol() - watson->getCurrentPosition().getCol());
+};
+
+string RobotW::str() const
+{
+    // Robot[pos=<pos>;type=<robot_type>;dist=<dist>]
+    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
+}
+
+RobotSW::RobotSW(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock, Watson *watson) : Robot(index, init_pos, map, SW)
 {
     this->sherlock = Sherlock;
     this->watson = watson;
     this->criminal = criminal;
+    countRobots++;
 };
+
+Position RobotSW::getNextPosition()
+{
+    /*Di chuyển đến vị trí tiếp theo cách ban đầu 2 đơn vị và có tổng khoảng
+cách đến cả Sherlock và Watson là gần nhất. Nếu có nhiều vị trí phù hợp thì thứ tự
+lựa chọn như nếu trong RobotS.*/
+    Position next_pos = pos;
+    int min_distance = 1000000;
+    Position arr[4];
+    arr[0] = Position(pos.getRow() - 2, pos.getCol());
+    arr[1] = Position(pos.getRow(), pos.getCol() + 2);
+    arr[2] = Position(pos.getRow() + 2, pos.getCol());
+    arr[3] = Position(pos.getRow(), pos.getCol() - 2);
+    for (int i = 0; i < 4; i++)
+    {
+        if (map->isValid(arr[i], this))
+        {
+            int distance = abs(arr[i].getRow() - sherlock->getCurrentPosition().getRow()) + abs(arr[i].getCol() - sherlock->getCurrentPosition().getCol()) + abs(arr[i].getRow() - watson->getCurrentPosition().getRow()) + abs(arr[i].getCol() - watson->getCurrentPosition().getCol());
+            if (distance < min_distance)
+            {
+                min_distance = distance;
+                next_pos = arr[i];
+            }
+            else if (distance == min_distance)
+            {
+                continue;
+            }
+        }
+    }
+    if (&next_pos == &pos)
+    {
+        next_pos = Position::npos;
+    }
+    return next_pos;
+}
+
+int RobotSW::getDistance() const
+{
+    return abs(pos.getRow() - sherlock->getCurrentPosition().getRow()) + abs(pos.getCol() - sherlock->getCurrentPosition().getCol()) + abs(pos.getRow() - watson->getCurrentPosition().getRow()) + abs(pos.getCol() - watson->getCurrentPosition().getCol());
+};
+
+string RobotSW::str() const
+{
+    // Robot[pos=<pos>;type=<robot_type>;dist=<dist>]
+    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
+}
+
+BaseItem::BaseItem(ItemType item_type, int value)
+{
+    this->item_type = item_type;
+    this->value = value;
+}
+
+bool BaseItem::canUse(Character *obj, Robot *robot)
+{
+    // get the object inside the robot and check if the obj can use the item
+    if ((robot->getItem())->canUse(obj, robot))
+    {
+        return true;
+    };
+    return false;
+}
+
+bool MagicBook::canUse(Character *obj, Robot *robot)
+{
+    if (obj->getExp() >= 350)
+    {
+        return true;
+    }
+    return false;
+}
+
+void MagicBook::use(Character *obj, Robot *robot)
+{
+    if (canUse(obj, robot))
+    {
+        obj->setExp(obj->getExp() * 1.25);
+    }
+}
+
+bool EnergyDrink::canUse(Character *obj, Robot *robot)
+{
+    if (obj->getHP() <= 100)
+    {
+        return true;
+    }
+    return false;
+}
+
+void EnergyDrink::use(Character *obj, Robot *robot)
+{
+    if (canUse(obj, robot))
+    {
+        obj->setHP(obj->getHP() * 1.2);
+    }
+}
+
+bool FirstAid::canUse(Character *obj, Robot *robot)
+{
+    if (obj->getHP() <= 100 || obj->getExp() <= 350)
+    {
+        return true;
+    }
+    return false;
+}
+
+void FirstAid::use(Character *obj, Robot *robot)
+{
+    if (canUse(obj, robot))
+    {
+        obj->setHP(obj->getHP() * 1.5);
+    }
+}
+
+bool ExemptionCard::canUse(Character *obj, Robot *robot)
+{
+    if (obj->getName() == "Sherlock" && obj->getHP() % 2 != 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+void ExemptionCard::use(Character *obj, Robot *robot)
+{
+    // help character remain the same HP and EXP without getting any changes from the changes
+}
+
+bool PassingCard::canUse(Character *obj, Robot *robot)
+{
+    if (obj->getName() == "Watson" && obj->getExp() % 2 != 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+void PassingCard::use(Character *obj, Robot *robot)
+{
+    // help character pass the challenges
+}
+
+BaseBag::BaseBag(Character *character)
+{
+    this->head = nullptr;
+    this->tail = nullptr;
+    this->countItem = 0;
+}
+
+BaseBag::~BaseBag()
+{
+    while (head != nullptr)
+    {
+        BaseItem *temp = head;
+        head = head->next;
+        delete temp;
+    }
+}
+
+bool BaseBag::insert(BaseItem *item)
+{
+    // add to the start of the list
+    if (character->getName() == "Sherlock")
+    {
+        if (countItem <= 13)
+        {
+            if (head == nullptr)
+            {
+                head = item;
+                tail = item;
+            }
+            else
+            {
+                item->next = head;
+                head = item;
+            }
+        }
+        else
+            return false;
+    }
+    else if (character->getName() == "Watson")
+    {
+        if (countItem <= 15)
+        {
+            if (head == nullptr)
+            {
+                head = item;
+                tail = item;
+            }
+            else
+            {
+                item->next = head;
+                head = item;
+            }
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+    countItem++;
+    return true;
+};
+
+BaseItem *BaseBag::get()
+{
+    /*Sử dụng một món đồ bất kì (phương thức get): Tìm món đồ trong túi có thể sử dụng
+được và gần đầu túi nhất. Món đồ này sẽ được đảo với món đồ đầu tiên trong danh sách
+và sau đó được xóa ra khỏi danh sách.*/
+    BaseItem *temp = head;
+    while (temp != nullptr)
+    {
+        if (temp->canUse(character, nullptr))
+        {
+            BaseItem *temp2 = head;
+            head = temp;
+            temp = temp2;
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return nullptr;
+};
+
+BaseItem *BaseBag::get(ItemType item_type)
+{
+    BaseItem *temp = head;
+    while (temp != nullptr)
+    {
+        if (temp->getItemType() == item_type)
+        {
+            if (temp == head)
+            {
+                BaseItem *result = temp;
+                delete temp;
+                return result;
+            }
+            else
+            {
+                // switch the temp with the head, return the temp and delete temp
+                BaseItem *temp2 = head;
+                head = temp;
+                temp = temp2;
+                BaseItem *result = temp;
+                delete temp;
+                return result;
+            }
+        }
+        temp = temp->next;
+    }
+    return nullptr;
+};
+
+/*
+    - If Sherlock and Watson meet each other, Watson will give his Exemption Card and Sherlock will give his Passing Card
+    - Sherlock will give first and then Watson will give his card
+    - If both of them dont have the card, they will keep moving
+    - The exchange will base on the operation: use get(ItemType item_type) to go through the bag and then use insert to add the card to the other bag
+*/
+
+string BaseBag::str() const
+{
+    /*Bag[count=<c>;<list_items>]*/
+    string res = "Bag[count=" + to_string(countItem) + ";";
+    BaseItem *temp = head;
+    while (temp != nullptr)
+    {
+        res += to_string(temp->getItemType()) + ";";
+        temp = temp->next;
+    }
+};
+
+StudyPinkProgram::StudyPinkProgram(const string &filepath)
+{
+    ifstream ifs(filepath);
+    if (!ifs.is_open())
+    {
+        return;
+    }
+    config = new Configuration(filepath);
+    ifs.close();
+    arr_mv_objs = new ArrayMovingObject(config->max_num_moving_objects);
+    sherlock = new Sherlock(1, config->sherlock_moving_rule, *config->sherlock_init_pos, map, config->sherlock_init_hp, config->sherlock_init_exp);
+    watson = new Watson(2, config->watson_moving_rule, *config->watson_init_pos, map, config->watson_init_hp, config->watson_init_exp);
+    criminal = new Criminal(0, *config->criminal_init_pos, map, sherlock, watson);
+    arr_mv_objs->add(criminal);
+    arr_mv_objs->add(sherlock);
+    arr_mv_objs->add(watson);
+}
+
+bool StudyPinkProgram::isStop() const
+{
+    if (sherlock->getHP() == 0 || watson->getHP() == 0 || criminal->getCurrentPosition().isEqual(sherlock->getCurrentPosition()) || criminal->getCurrentPosition().isEqual(watson->getCurrentPosition()))
+    {
+        return true;
+    }
+    return false;
+}
+
+void StudyPinkProgram::run(bool verbose)
+{
+
+    /*Phương thức run có 1 tham số là verbose. Nếu verbose bằng true thì cần in ra
+thông tin của mỗi MovingObject trong ArrayMovingObject sau khi thực hiện một
+bước di chuyển và các cập nhật sau đó nếu có (ví dụ như Watson gặp một Robot và
+thực hiện thử thách với Robot). SV tham khảo thêm initial code về vị trí của hàm
+printStep trong run. Phương thức run chạy tối đa num_steps (lấy từ tập tin
+cấu hình). Sau mỗi step nếu chương trình thỏa điều kiện dừng nêu trong phương
+thức isStop thì chương trình sẽ dừng lại. Mỗi step, chương trình sẽ lần lượt chạy
+từ đầu đến cuối một ArrayMovingObject và gọi move. Sau đó thực hiện các công
+việc như khi 2 đối tượng gặp nhau và tạo ra một robot mới*/
+    if (verbose)
+    {
+        cout << arr_mv_objs->str() << endl;
+    }
+    for (int i = 0; i < config->num_steps; i++)
+    {
+        for (int j = 0; j < arr_mv_objs->size(); j++)
+        {
+            arr_mv_objs->get(j)->move();
+            Robot *robot = criminal->getRobot();
+            if (sherlock->getCurrentPosition().isEqual(robot->getCurrentPosition()))
+            {
+                if (robot->getRobotType() == 0)
+                {
+                    if (sherlock->getExp() > 500)
+                    {
+                        sherlock->getCurrentPosition() = criminal->getCurrentPosition();
+                    }
+                    else
+                    {
+                        robot->~Robot();
+                        BaseItem *item = robot->getItem();
+                        sherlock->getBag()->insert(item);
+                    }
+                }
+                if (robot->getRobotType() == 1)
+                {
+                    if (sherlock->getExp() > 400)
+                    {
+                        // sherlock get the robot item
+                        BaseItem *item = robot->getItem();
+                        sherlock->getBag()->insert(item);
+                        robot->~Robot();
+                    }
+                    else
+                    {
+                        sherlock->setExp(sherlock->getExp() * 0.9);
+                    }
+                }
+                if (robot->getRobotType() == 2)
+                {
+                    BaseItem *item = robot->getItem();
+                    sherlock->getBag()->insert(item);
+                }
+                if (robot->getRobotType() == 3)
+                {
+                    if (sherlock->getHP() > 335 && sherlock->getExp() > 300)
+                    {
+                        BaseItem *item = robot->getItem();
+                        sherlock->getBag()->insert(item);
+                    }
+                    else
+                    {
+                        sherlock->setHP(sherlock->getHP() * 0.85);
+                        sherlock->setExp(sherlock->getExp() * 0.85);
+                    }
+                }
+            }
+        }
+        if (isStop())
+        {
+            break;
+        }
+    }
+}
 
 int main()
 {
+    return 0;
 }
