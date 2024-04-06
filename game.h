@@ -149,6 +149,8 @@ public:
 
 class Map
 {
+    friend class TestStudyInPink;
+
 private:
     int num_rows, num_cols;
     MapElement ***map;

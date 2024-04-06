@@ -1127,6 +1127,15 @@ StudyPinkProgram::StudyPinkProgram(const string &filepath)
     arr_mv_objs->add(criminal);
     arr_mv_objs->add(sherlock);
     arr_mv_objs->add(watson);
+    for (int i = 0; i < config->num_walls; i++)
+    {
+        arr_walls[i] = config->arr_walls[i];
+    }
+    for (int i = 0; i < config->num_fake_walls; i++)
+    {
+        map->addFakeWall(config->arr_fake_walls[i]);
+    }
+    // config all of the attributes
 }
 
 bool StudyPinkProgram::isStop() const
@@ -1160,6 +1169,10 @@ việc như khi 2 đối tượng gặp nhau và tạo ra một robot mới*/
         {
             arr_mv_objs->get(j)->move();
             Robot *robot = criminal->getRobot();
+            // if sherlock meet a fakewall he will go through it
+            for (int k = 0; k < (config->arr_fake_walls).size(); k++)
+            {
+            }
             if (sherlock->getCurrentPosition().isEqual(robot->getCurrentPosition()))
             {
                 if (robot->getRobotType() == 0)
