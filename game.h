@@ -178,33 +178,54 @@ public:
     virtual Position getCurrentPosition() const;
     virtual void move();
     virtual string str() const = 0;
-    BaseBag *getBag() const
-    {
-        return bag;
-    };
+    virtual BaseBag *getBag() const;
 };
 class Sherlock /* TODO */ : public Character
 {
 private:
-    int hp;
-    int exp;
+    Robot *robot;
+    RobotC *robotC;
+    Criminal *criminal;
+    Watson *watson;
+    SherlockBag *bag;
 
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
     Position getNextPosition();
+    void meetRobotC(RobotC *robotC, Criminal *criminal);
+    void meetRobot(Robot *robot);
+    void meetWatson(Watson *watson);
+    void meetCriminal(Criminal *criminal);
+    void move();
+    BaseBag *getBag() const
+    {
+        return bag;
+    };
 };
 
 class Watson /* TODO */ : public Character
 {
 private:
-    int hp;
-    int exp;
+    WatsonBag *bag;
+    Robot *robot;
+    RobotC *robotC;
+    Criminal *criminal;
+    Sherlock *sherlock;
 
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
     Position getNextPosition();
+    void meetRobotC(RobotC *robotC, Criminal *criminal);
+    void meetRobot(Robot *robot);
+    void meetSherlock(Sherlock *sherlock);
+    void meetCriminal(Criminal *criminal);
+    void move();
+    BaseBag *getBag() const
+    {
+        return bag;
+    };
 };
 
 class Criminal /* TODO */ : public Character
@@ -360,6 +381,7 @@ public:
     PassingCard(const string &challenges);
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
+    string getChallenge();
 };
 
 class BaseBag
@@ -377,6 +399,10 @@ public:
     virtual BaseItem *get();
     virtual BaseItem *get(ItemType itemType);
     virtual string str() const;
+    int getCountItem() const
+    {
+        return countItem;
+    };
 };
 
 class WatsonBag : public BaseBag
