@@ -1,8 +1,7 @@
 #include "game.h"
 
-MapElement::MapElement(ElementType in_type) : type(in_type)
+MapElement::MapElement(ElementType in_type)
 {
-    // finish the constructor
     this->type = in_type;
 }
 
@@ -13,6 +12,16 @@ MapElement::~MapElement()
 ElementType MapElement::getType() const
 {
     return type;
+}
+
+Path::Path() : MapElement(PATH)
+{
+    type = PATH;
+};
+
+Wall::Wall() : MapElement(WALL)
+{
+    type = WALL;
 }
 
 FakeWall::FakeWall(int r, int c) : MapElement(FAKE_WALL)
@@ -87,6 +96,16 @@ void MovingObject::setExp(int exp)
     this->exp = exp;
 }
 
+int MovingObject::getHP() const
+{
+    return hp;
+}
+
+int MovingObject::getExp() const
+{
+    return exp;
+}
+
 Map::~Map()
 {
     for (int i = 0; i < num_rows; i++)
@@ -142,6 +161,15 @@ bool Position::isEqual(const Position &pos) const
     return false;
 }
 
+Character::Character(int index, const Position &init_pos, Map *map, const string &name) : MovingObject(index, init_pos, map, name)
+{
+    // finish this constructor
+    this->index = index;
+    this->pos = init_pos;
+    this->map = map;
+    this->name = name;
+}
+
 Position Character::getCurrentPosition() const
 {
     return pos;
@@ -189,6 +217,11 @@ Position Character::getNextPosition()
         i++;
     }
     return next_pos;
+}
+
+BaseBag *Character::getBag() const
+{
+    return bag;
 }
 
 void Character::move()
@@ -367,8 +400,6 @@ void Sherlock::meetCriminal(Criminal *criminal)
     this->getNextPosition() = criminal->getCurrentPosition();
 }
 
-// do the same for class Watson
-
 Watson::Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, init_pos, map, "Watson")
 {
     // finish the constructor
@@ -382,6 +413,18 @@ string Watson::str() const
 {
     // Watson[index=<index>;pos=<pos>;moving_rule=<moving_rule>]
     return "Watson[index=" + to_string(index) + ";pos=" + pos.str() + ";moving_rule=" + moving_rule + "]";
+}
+
+void Watson::meetSherlock(Sherlock *sherlock)
+{
+    // check if there are any exemcemption card in watsonBag;
+    ItemType item = ItemType::EXCEMPTION_CARD;
+    BaseItem *ecard = this->bag->get(item);
+    while (ecard != nullptr)
+    {
+        sherlock->getBag()->insert(ecard);
+        ecard = this->bag->get(item);
+    }
 }
 
 void Watson::meetRobotC(RobotC *robotC, Criminal *criminal)
@@ -423,8 +466,6 @@ void Watson::meetCriminal(Criminal *criminal)
 {
     pos = criminal->getCurrentPosition();
 }
-
-// do the same for Watson move() method
 
 void Watson::move()
 {
@@ -510,11 +551,6 @@ void Watson::move()
             }
         }
     };
-}
-
-int MovingObject::getExp() const
-{
-    return exp;
 }
 
 string Criminal::str() const
@@ -1187,6 +1223,15 @@ bool BaseItem::canUse(Character *obj, Robot *robot)
     return false;
 }
 
+ItemType BaseItem::getItemType() const
+{
+    return item_type;
+}
+
+MagicBook::MagicBook() : BaseItem(ItemType::MAGIC_BOOK, 0)
+{
+}
+
 bool MagicBook::canUse(Character *obj, Robot *robot)
 {
     if (obj->getExp() >= 350)
@@ -1202,6 +1247,10 @@ void MagicBook::use(Character *obj, Robot *robot)
     {
         obj->setExp(obj->getExp() * 1.25);
     }
+}
+
+EnergyDrink::EnergyDrink() : BaseItem(ItemType::ENERGY_DRINK, 0)
+{
 }
 
 bool EnergyDrink::canUse(Character *obj, Robot *robot)
@@ -1221,6 +1270,10 @@ void EnergyDrink::use(Character *obj, Robot *robot)
     }
 }
 
+FirstAid::FirstAid() : BaseItem(ItemType::FIRST_AID, 0)
+{
+}
+
 bool FirstAid::canUse(Character *obj, Robot *robot)
 {
     if (obj->getHP() <= 100 || obj->getExp() <= 350)
@@ -1236,6 +1289,10 @@ void FirstAid::use(Character *obj, Robot *robot)
     {
         obj->setHP(obj->getHP() * 1.5);
     }
+}
+
+ExemptionCard::ExemptionCard() : BaseItem(ItemType::EXCEMPTION_CARD, 0)
+{
 }
 
 bool ExemptionCard::canUse(Character *obj, Robot *robot)
@@ -1402,6 +1459,16 @@ string BaseBag::str() const
     }
 };
 
+SherlockBag::SherlockBag(Sherlock *sherlock) : BaseBag(sherlock)
+{
+    this->character = sherlock;
+}
+
+WatsonBag::WatsonBag(Watson *watson) : BaseBag(watson)
+{
+    this->character = watson;
+}
+
 StudyInPinkProgram::StudyInPinkProgram(const string &filepath)
 {
     ifstream ifs(filepath);
@@ -1420,25 +1487,6 @@ bool StudyInPinkProgram::isStop() const
         return true;
     }
     return false;
-}
-
-void StudyInPinkProgram::run(bool verbose)
-{
-    for (int i = 0; i < config->num_steps; i++)
-    {
-        for (int j = 0; j < arr_mv_objs->size(); j++)
-        {
-            arr_mv_objs->get(j)->move();
-        }
-        if (isStop())
-        {
-            break;
-        }
-    }
-    if (verbose)
-    {
-        cout << arr_mv_objs->str() << endl;
-    }
 }
 
 int main()

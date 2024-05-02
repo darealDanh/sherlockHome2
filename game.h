@@ -174,11 +174,10 @@ protected:
 
 public:
     Robot(int index, const Position &init_pos, Map *map, RobotType robot_type);
-    ~Robot();
     virtual Position getNextPosition() = 0;
     Position getCurrentPosition() const;
     void move();
-    virtual int getDistance() const;
+    virtual int getDistance() = 0;
     static int countRobots;
     virtual BaseItem *getItem();
     int getRobotType() const
@@ -197,12 +196,11 @@ protected:
 
 public:
     Character(int index, const Position &init_pos, Map *map, const string &name);
-    virtual ~Character();
     virtual Position getNextPosition();
     virtual Position getCurrentPosition() const;
     virtual void move();
     virtual string str() const = 0;
-    virtual BaseBag *getBag() const;
+    BaseBag *getBag() const;
 };
 class Sherlock /* TODO */ : public Character
 {
@@ -221,10 +219,6 @@ public:
     void meetWatson(Watson *watson);
     void meetCriminal(Criminal *criminal);
     void move();
-    BaseBag *getBag() const
-    {
-        return bag;
-    };
 };
 
 class Watson /* TODO */ : public Character
@@ -244,10 +238,6 @@ public:
     void meetSherlock(Sherlock *sherlock);
     void meetCriminal(Criminal *criminal);
     void move();
-    BaseBag *getBag() const
-    {
-        return bag;
-    };
 };
 
 class Criminal /* TODO */ : public Character
@@ -335,7 +325,6 @@ public:
     int value;
     BaseItem *next;
     BaseItem(ItemType item_type, int value);
-    virtual ~BaseItem();
     virtual bool canUse(Character *obj, Robot *robot) = 0;
     virtual void use(Character *obj, Robot *robot) = 0;
     ItemType getItemType() const;
@@ -413,10 +402,6 @@ private:
 
 public:
     WatsonBag(Watson *watson);
-    bool insert(BaseItem *item);
-    BaseItem *get();
-    BaseItem *get(ItemType itemType);
-    string str() const;
 };
 
 class SherlockBag : public BaseBag
@@ -426,10 +411,6 @@ private:
 
 public:
     SherlockBag(Sherlock *sherlock);
-    bool insert(BaseItem *item);
-    BaseItem *get();
-    BaseItem *get(ItemType itemType);
-    string str() const;
 };
 
 class ArrayMovingObject
