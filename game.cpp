@@ -137,9 +137,7 @@ Position::Position(const string &str_pos)
 trị cho hàng và cột.*/
     sscanf(str_pos.c_str(), "(%d,%d)", &r, &c);
 }
-/*Phương thức isEqual có hai tham số truyền vào in_r và in_c biểu diễn cho một vị
-trí. isEqual trả về giá trị true nếu vị trí truyền vào trùng với vị trí của đối tượng này.
-Ngược lại, isEqual trả về false.*/
+
 bool Position::isEqual(const Position &pos) const
 {
     if (r == pos.getRow() && c == pos.getCol())
@@ -1092,13 +1090,6 @@ BaseItem *BaseBag::get(ItemType item_type)
     return nullptr;
 };
 
-/*
-    - If Sherlock and Watson meet each other, Watson will give his Exemption Card and Sherlock will give his Passing Card
-    - Sherlock will give first and then Watson will give his card
-    - If both of them dont have the card, they will keep moving
-    - The exchange will base on the operation: use get(ItemType item_type) to go through the bag and then use insert to add the card to the other bag
-*/
-
 string BaseBag::str() const
 {
     /*Bag[count=<c>;<list_items>]*/
@@ -1111,7 +1102,7 @@ string BaseBag::str() const
     }
 };
 
-StudyPinkProgram::StudyPinkProgram(const string &filepath)
+StudyInPinkProgram::StudyInPinkProgram(const string &filepath)
 {
     ifstream ifs(filepath);
     if (!ifs.is_open())
@@ -1127,18 +1118,10 @@ StudyPinkProgram::StudyPinkProgram(const string &filepath)
     arr_mv_objs->add(criminal);
     arr_mv_objs->add(sherlock);
     arr_mv_objs->add(watson);
-    for (int i = 0; i < config->num_walls; i++)
-    {
-        arr_walls[i] = config->arr_walls[i];
-    }
-    for (int i = 0; i < config->num_fake_walls; i++)
-    {
-        map->addFakeWall(config->arr_fake_walls[i]);
-    }
     // config all of the attributes
 }
 
-bool StudyPinkProgram::isStop() const
+bool StudyInPinkProgram::isStop() const
 {
     if (sherlock->getHP() == 0 || watson->getHP() == 0 || criminal->getCurrentPosition().isEqual(sherlock->getCurrentPosition()) || criminal->getCurrentPosition().isEqual(watson->getCurrentPosition()))
     {
@@ -1147,7 +1130,7 @@ bool StudyPinkProgram::isStop() const
     return false;
 }
 
-void StudyPinkProgram::run(bool verbose)
+void StudyInPinkProgram::run(bool verbose)
 {
 
     /*Phương thức run có 1 tham số là verbose. Nếu verbose bằng true thì cần in ra
@@ -1170,7 +1153,7 @@ việc như khi 2 đối tượng gặp nhau và tạo ra một robot mới*/
             arr_mv_objs->get(j)->move();
             Robot *robot = criminal->getRobot();
             // if sherlock meet a fakewall he will go through it
-            for (int k = 0; k < (config->arr_fake_walls).size(); k++)
+            for (int k = 0; k < (config->arr_walls).size(); k++)
             {
             }
             if (sherlock->getCurrentPosition().isEqual(robot->getCurrentPosition()))

@@ -425,7 +425,7 @@ public:
 
 class Configuration
 {
-    friend class StudyPinkProgram;
+    friend class StudyInPinkProgram;
 
 private:
     // TODO
@@ -441,8 +441,10 @@ public:
 
 // Robot, BaseItem, BaseBag,...
 
-class StudyPinkProgram
+class StudyInPinkProgram
 {
+    friend class Configuration;
+
 private:
     // Sample attributes
     Configuration *config;
@@ -455,7 +457,7 @@ private:
     ArrayMovingObject *arr_mv_objs;
 
 public:
-    StudyPinkProgram(const string &config_file_path);
+    StudyInPinkProgram(const string &config_file_path);
 
     bool isStop() const;
 
@@ -505,5 +507,5 @@ public:
         printResult();
     }
 
-    ~StudyPinkProgram();
+    ~StudyInPinkProgram();
 };
