@@ -25,10 +25,13 @@ class Configuration;
 class Map;
 
 class Criminal;
+class Robot;
 class RobotS;
 class RobotW;
 class RobotSW;
 class RobotC;
+class Sherlock;
+class Watson;
 
 class ArrayMovingObject;
 class StudyPinkProgram;
@@ -163,6 +166,27 @@ public:
     int getNumCol() const { return num_cols; };
 };
 
+class Robot : public MovingObject
+{
+protected:
+    RobotType robot_type;
+    BaseItem *item;
+
+public:
+    Robot(int index, const Position &init_pos, Map *map, RobotType robot_type);
+    ~Robot();
+    virtual Position getNextPosition() = 0;
+    Position getCurrentPosition() const;
+    void move();
+    virtual int getDistance() const;
+    static int countRobots;
+    virtual BaseItem *getItem();
+    int getRobotType() const
+    {
+        return robot_type;
+    };
+};
+
 class Character : public MovingObject
 {
     friend class TestStudyInPink;
@@ -178,33 +202,52 @@ public:
     virtual Position getCurrentPosition() const;
     virtual void move();
     virtual string str() const = 0;
-    BaseBag *getBag() const
-    {
-        return bag;
-    };
+    virtual BaseBag *getBag() const;
 };
 class Sherlock /* TODO */ : public Character
 {
 private:
-    int hp;
-    int exp;
+    Robot *robot;
+    RobotC *robotC;
+    Criminal *criminal;
+    Watson *watson;
 
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
     Position getNextPosition();
+    void meetRobotC(RobotC *robotC, Criminal *criminal);
+    void meetRobot(Robot *robot);
+    void meetWatson(Watson *watson);
+    void meetCriminal(Criminal *criminal);
+    void move();
+    BaseBag *getBag() const
+    {
+        return bag;
+    };
 };
 
 class Watson /* TODO */ : public Character
 {
 private:
-    int hp;
-    int exp;
+    Robot *robot;
+    RobotC *robotC;
+    Criminal *criminal;
+    Sherlock *sherlock;
 
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
     Position getNextPosition();
+    void meetRobotC(RobotC *robotC, Criminal *criminal);
+    void meetRobot(Robot *robot);
+    void meetSherlock(Sherlock *sherlock);
+    void meetCriminal(Criminal *criminal);
+    void move();
+    BaseBag *getBag() const
+    {
+        return bag;
+    };
 };
 
 class Criminal /* TODO */ : public Character
@@ -226,27 +269,6 @@ public:
         return countSteps;
     };
     Robot *getRobot() const;
-};
-
-class Robot : public MovingObject
-{
-protected:
-    RobotType robot_type;
-    BaseItem *item;
-
-public:
-    Robot(int index, const Position &init_pos, Map *map, RobotType robot_type);
-    ~Robot();
-    virtual Position getNextPosition() = 0;
-    Position getCurrentPosition() const;
-    void move();
-    virtual int getDistance() const;
-    static int countRobots;
-    virtual BaseItem *getItem();
-    int getRobotType() const
-    {
-        return robot_type;
-    };
 };
 
 class RobotC : public Robot
@@ -360,6 +382,7 @@ public:
     PassingCard(const string &challenges);
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
+    string getChallenge();
 };
 
 class BaseBag
@@ -377,6 +400,10 @@ public:
     virtual BaseItem *get();
     virtual BaseItem *get(ItemType itemType);
     virtual string str() const;
+    int getCountItem() const
+    {
+        return countItem;
+    };
 };
 
 class WatsonBag : public BaseBag

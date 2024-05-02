@@ -132,9 +132,6 @@ Position::Position(int r, int c)
 
 Position::Position(const string &str_pos)
 {
-    /*Phương thức khởi tạo Constructor (public) với 1 tham số str_pos biểu diễn một vị trí
-ở dạng chuỗi. Định dạng của str_pos là "(<r>,<c>)" với <r> và <c> lần lượt là giá
-trị cho hàng và cột.*/
     sscanf(str_pos.c_str(), "(%d,%d)", &r, &c);
 }
 
@@ -143,15 +140,6 @@ bool Position::isEqual(const Position &pos) const
     if (r == pos.getRow() && c == pos.getCol())
         return true;
     return false;
-}
-
-Sherlock::Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, pos, map, "Sherlock")
-{
-    // finish the constructor
-    this->moving_rule = moving_rule;
-    this->hp = init_hp;
-    this->exp = init_exp;
-    bag = new SherlockBag(this);
 }
 
 Position Character::getCurrentPosition() const
@@ -214,13 +202,173 @@ void Character::move()
     pos = next_pos;
 }
 
+Sherlock::Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, pos, map, "Sherlock")
+{
+    // finish the constructor
+    this->moving_rule = moving_rule;
+    this->hp = init_hp;
+    this->exp = init_exp;
+    bag = new SherlockBag(this);
+}
+
 string Sherlock::str() const
 {
     // Sherlock[index=<index>;pos=<pos>;moving_rule=<moving_rule>]
     return "Sherlock[index=" + to_string(index) + ";pos=" + pos.str() + ";moving_rule=" + moving_rule + "]";
 }
 
+void Sherlock::move()
+{
+    Position next_pos = getNextPosition();
+    if (&next_pos == &Position::npos)
+    {
+        return;
+    }
+    pos = next_pos;
+    if (pos.isEqual(watson->getCurrentPosition()))
+    {
+        meetWatson(watson);
+    }
+    if (pos.isEqual(criminal->getCurrentPosition()))
+    {
+        meetCriminal(criminal);
+    }
+    if (pos.isEqual(robot->getCurrentPosition()))
+    {
+        if (this->bag->get(ItemType::PASSING_CARD) != nullptr)
+        {
+            BaseItem *item = this->bag->get(ItemType::PASSING_CARD);
+            item->use(this, robot);
+        }
+        else
+        {
+            meetRobot(robot);
+            // if sherlock has magicbook, firstaid or energydrink, use it now
+            ItemType item = ItemType::MAGIC_BOOK;
+            BaseItem *magicbook = this->bag->get(item);
+            while (magicbook != nullptr)
+            {
+                magicbook->use(this, robot);
+                magicbook = this->bag->get(item);
+            }
+            item = ItemType::FIRST_AID;
+            BaseItem *firstaid = this->bag->get(item);
+            while (firstaid != nullptr)
+            {
+                firstaid->use(this, robot);
+                firstaid = this->bag->get(item);
+            }
+            item = ItemType::ENERGY_DRINK;
+            BaseItem *energydrink = this->bag->get(item);
+            while (energydrink != nullptr)
+            {
+                energydrink->use(this, robot);
+                energydrink = this->bag->get(item);
+            }
+        }
+    }
+    if (pos.isEqual(robotC->getCurrentPosition()))
+    {
+        if (this->bag->get(ItemType::PASSING_CARD) != nullptr)
+        {
+            BaseItem *item = this->bag->get(ItemType::PASSING_CARD);
+            item->use(this, robotC);
+        }
+        else
+        {
+            meetRobotC(robotC, criminal);
+            // if sherlock has magicbook, firstaid or energydrink, use it now
+            ItemType item = ItemType::MAGIC_BOOK;
+            BaseItem *magicbook = this->bag->get(item);
+            while (magicbook != nullptr)
+            {
+                magicbook->use(this, robotC);
+                magicbook = this->bag->get(item);
+            }
+            item = ItemType::FIRST_AID;
+            BaseItem *firstaid = this->bag->get(item);
+            while (firstaid != nullptr)
+            {
+                firstaid->use(this, robotC);
+                firstaid = this->bag->get(item);
+            }
+            item = ItemType::ENERGY_DRINK;
+            BaseItem *energydrink = this->bag->get(item);
+            while (energydrink != nullptr)
+            {
+                energydrink->use(this, robotC);
+                energydrink = this->bag->get(item);
+            }
+        }
+    }
+}
+
+void Sherlock::meetRobotC(RobotC *robotC, Criminal *criminal)
+{
+    if (this->getExp() > 500)
+    {
+        this->meetCriminal(criminal);
+    }
+    else
+    {
+        BaseItem *item = robotC->getItem();
+        this->bag->insert(item);
+    }
+}
+
+void Sherlock::meetRobot(Robot *robot)
+{
+    if (robot->getRobotType() == 1)
+    {
+        if (this->getExp() > 400)
+        {
+            BaseItem *item = robot->getItem();
+            this->bag->insert(item);
+        }
+        else
+        {
+            this->setExp(this->getExp() * 0.9);
+        }
+    }
+    if (robot->getRobotType() == 2)
+    {
+        BaseItem *item = robot->getItem();
+        this->bag->insert(item);
+    }
+    if (robot->getRobotType() == 3)
+    {
+        if (this->getExp() > 300 && this->getHP() > 335)
+        {
+            BaseItem *item = robot->getItem();
+            this->bag->insert(item);
+        }
+        else
+        {
+            this->setExp(this->getExp() * 0.85);
+            this->setHP(this->getHP() * 0.85);
+        }
+    }
+}
+
+void Sherlock::meetWatson(Watson *watson)
+{
+    // check if there are any passing card in sherlockBag;
+    ItemType item = ItemType::PASSING_CARD;
+    BaseItem *pcard = this->bag->get(item);
+    while (pcard != nullptr)
+    {
+        watson->getBag()->insert(pcard);
+        pcard = this->bag->get(item);
+    }
+}
+
+void Sherlock::meetCriminal(Criminal *criminal)
+{
+    this->getNextPosition() = criminal->getCurrentPosition();
+}
+
 // do the same for class Watson
+
 Watson::Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, init_pos, map, "Watson")
 {
     // finish the constructor
@@ -234,6 +382,134 @@ string Watson::str() const
 {
     // Watson[index=<index>;pos=<pos>;moving_rule=<moving_rule>]
     return "Watson[index=" + to_string(index) + ";pos=" + pos.str() + ";moving_rule=" + moving_rule + "]";
+}
+
+void Watson::meetRobotC(RobotC *robotC, Criminal *criminal)
+{
+    BaseItem *item = robotC->getItem();
+    this->bag->insert(item);
+}
+
+void Watson::meetRobot(Robot *robot)
+{
+    if (robot->getRobotType() == 2)
+    {
+        if (this->getHP() > 350)
+        {
+            BaseItem *item = robot->getItem();
+            this->bag->insert(item);
+        }
+        else
+        {
+            this->setHP(this->getHP() * 0.95);
+        }
+    }
+    if (robot->getRobotType() == 3)
+    {
+        if (this->getExp() > 600 && this->getHP() > 165)
+        {
+            BaseItem *item = robot->getItem();
+            this->bag->insert(item);
+        }
+        else
+        {
+            this->setExp(this->getExp() * 0.85);
+            this->setHP(this->getHP() * 0.85);
+        }
+    }
+}
+
+void Watson::meetCriminal(Criminal *criminal)
+{
+    pos = criminal->getCurrentPosition();
+}
+
+// do the same for Watson move() method
+
+void Watson::move()
+{
+    Position next_pos = getNextPosition();
+    if (&next_pos == &Position::npos)
+    {
+        return;
+    }
+    pos = next_pos;
+    if (pos.isEqual(sherlock->getCurrentPosition()))
+    {
+        meetSherlock(sherlock);
+    }
+    if (pos.isEqual(criminal->getCurrentPosition()))
+    {
+        meetCriminal(criminal);
+    }
+    if (pos.isEqual(robot->getCurrentPosition()))
+    {
+        if (this->bag->get(ItemType::EXCEMPTION_CARD) != nullptr)
+        {
+            BaseItem *item = this->bag->get(ItemType::EXCEMPTION_CARD);
+            item->use(this, robot);
+        }
+        else
+        {
+            meetRobot(robot);
+            // if watson has magicbook, firstaid or energydrink, use it now
+            ItemType item = ItemType::MAGIC_BOOK;
+            BaseItem *magicbook = this->bag->get(item);
+            while (magicbook != nullptr)
+            {
+                magicbook->use(this, robot);
+                magicbook = this->bag->get(item);
+            }
+            item = ItemType::FIRST_AID;
+            BaseItem *firstaid = this->bag->get(item);
+            while (firstaid != nullptr)
+            {
+                firstaid->use(this, robot);
+                firstaid = this->bag->get(item);
+            }
+            item = ItemType::ENERGY_DRINK;
+            BaseItem *energydrink = this->bag->get(item);
+            while (energydrink != nullptr)
+            {
+                energydrink->use(this, robot);
+                energydrink = this->bag->get(item);
+            }
+        }
+    }
+    if (pos.isEqual(robotC->getCurrentPosition()))
+    {
+        if (this->bag->get(ItemType::EXCEMPTION_CARD) != nullptr)
+        {
+            BaseItem *item = this->bag->get(ItemType::EXCEMPTION_CARD);
+            item->use(this, robotC);
+        }
+        else
+        {
+            meetRobotC(robotC, criminal);
+            // if watson has magicbook, firstaid or energydrink, use it now
+            ItemType item = ItemType::MAGIC_BOOK;
+            BaseItem *magicbook = this->bag->get(item);
+            while (magicbook != nullptr)
+            {
+                magicbook->use(this, robotC);
+                magicbook = this->bag->get(item);
+            }
+            item = ItemType::FIRST_AID;
+            BaseItem *firstaid = this->bag->get(item);
+            while (firstaid != nullptr)
+            {
+                firstaid->use(this, robotC);
+                firstaid = this->bag->get(item);
+            }
+            item = ItemType::ENERGY_DRINK;
+            BaseItem *energydrink = this->bag->get(item);
+            while (energydrink != nullptr)
+            {
+                energydrink->use(this, robotC);
+                energydrink = this->bag->get(item);
+            }
+        }
+    };
 }
 
 int MovingObject::getExp() const
@@ -376,6 +652,11 @@ MovingObject *ArrayMovingObject::get(int index) const
         return nullptr;
     }
     return arr_mv_objs[index];
+}
+
+int ArrayMovingObject::size() const
+{
+    return count;
 }
 
 string ArrayMovingObject::str() const
@@ -608,6 +889,7 @@ string Configuration::str() const
 }
 
 Robot::Robot(int index, const Position &init_pos, Map *map, RobotType robot_type) : MovingObject(index, init_pos, map, "Robot")
+
 {
     this->robot_type = robot_type;
     /*Gọi vị trí tạo ra robot có toạ độ là (i,j) với i là chỉ số hàng, j là chỉ số cột.
@@ -669,6 +951,7 @@ các chữ số, cho đến khi giá trị tổng đó là số có 1 chữ số
         }
     }
 };
+
 Position Robot::getCurrentPosition() const
 {
     return pos;
@@ -695,6 +978,7 @@ RobotC::RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal
 {
     this->criminal = criminal;
     countRobots++;
+    this->name = "RobotC";
 };
 
 Position RobotC::getNextPosition()
@@ -726,6 +1010,7 @@ RobotS::RobotS(int index, const Position &init_pos, Map *map, Criminal *criminal
 {
     this->sherlock = Sherlock;
     this->criminal = criminal;
+    this->name = "RobotS";
     countRobots++;
 };
 
@@ -781,6 +1066,7 @@ RobotW::RobotW(int index, const Position &init_pos, Map *map, Criminal *criminal
 {
     this->watson = watson;
     this->criminal = criminal;
+    this->name = "RobotW";
     countRobots++;
 };
 
@@ -835,6 +1121,7 @@ RobotSW::RobotSW(int index, const Position &init_pos, Map *map, Criminal *crimin
     this->sherlock = Sherlock;
     this->watson = watson;
     this->criminal = criminal;
+    this->name = "RobotSW";
     countRobots++;
 };
 
@@ -962,7 +1249,13 @@ bool ExemptionCard::canUse(Character *obj, Robot *robot)
 
 void ExemptionCard::use(Character *obj, Robot *robot)
 {
-    // help character remain the same HP and EXP without getting any changes from the changes
+    obj->setExp(obj->getExp());
+    obj->setHP(obj->getHP());
+}
+
+PassingCard::PassingCard(const string &challenges) : BaseItem(ItemType::PASSING_CARD, 0)
+{
+    this->challenges = challenges;
 }
 
 bool PassingCard::canUse(Character *obj, Robot *robot)
@@ -976,7 +1269,17 @@ bool PassingCard::canUse(Character *obj, Robot *robot)
 
 void PassingCard::use(Character *obj, Robot *robot)
 {
-    // help character pass the challenges
+    if (challenges == robot->getName())
+    {
+        BaseItem *item = robot->getItem();
+        obj->getBag()->insert(item);
+    }
+    else
+    {
+        obj->setExp(obj->getExp() - 50);
+        BaseItem *item = robot->getItem();
+        obj->getBag()->insert(item);
+    }
 }
 
 BaseBag::BaseBag(Character *character)
@@ -1043,9 +1346,6 @@ bool BaseBag::insert(BaseItem *item)
 
 BaseItem *BaseBag::get()
 {
-    /*Sử dụng một món đồ bất kì (phương thức get): Tìm món đồ trong túi có thể sử dụng
-được và gần đầu túi nhất. Món đồ này sẽ được đảo với món đồ đầu tiên trong danh sách
-và sau đó được xóa ra khỏi danh sách.*/
     BaseItem *temp = head;
     while (temp != nullptr)
     {
@@ -1111,14 +1411,6 @@ StudyInPinkProgram::StudyInPinkProgram(const string &filepath)
     }
     config = new Configuration(filepath);
     ifs.close();
-    arr_mv_objs = new ArrayMovingObject(config->max_num_moving_objects);
-    sherlock = new Sherlock(1, config->sherlock_moving_rule, *config->sherlock_init_pos, map, config->sherlock_init_hp, config->sherlock_init_exp);
-    watson = new Watson(2, config->watson_moving_rule, *config->watson_init_pos, map, config->watson_init_hp, config->watson_init_exp);
-    criminal = new Criminal(0, *config->criminal_init_pos, map, sherlock, watson);
-    arr_mv_objs->add(criminal);
-    arr_mv_objs->add(sherlock);
-    arr_mv_objs->add(watson);
-    // config all of the attributes
 }
 
 bool StudyInPinkProgram::isStop() const
@@ -1132,87 +1424,49 @@ bool StudyInPinkProgram::isStop() const
 
 void StudyInPinkProgram::run(bool verbose)
 {
-
-    /*Phương thức run có 1 tham số là verbose. Nếu verbose bằng true thì cần in ra
-thông tin của mỗi MovingObject trong ArrayMovingObject sau khi thực hiện một
-bước di chuyển và các cập nhật sau đó nếu có (ví dụ như Watson gặp một Robot và
-thực hiện thử thách với Robot). SV tham khảo thêm initial code về vị trí của hàm
-printStep trong run. Phương thức run chạy tối đa num_steps (lấy từ tập tin
-cấu hình). Sau mỗi step nếu chương trình thỏa điều kiện dừng nêu trong phương
-thức isStop thì chương trình sẽ dừng lại. Mỗi step, chương trình sẽ lần lượt chạy
-từ đầu đến cuối một ArrayMovingObject và gọi move. Sau đó thực hiện các công
-việc như khi 2 đối tượng gặp nhau và tạo ra một robot mới*/
-    if (verbose)
-    {
-        cout << arr_mv_objs->str() << endl;
-    }
     for (int i = 0; i < config->num_steps; i++)
     {
         for (int j = 0; j < arr_mv_objs->size(); j++)
         {
             arr_mv_objs->get(j)->move();
-            Robot *robot = criminal->getRobot();
-            // if sherlock meet a fakewall he will go through it
-            for (int k = 0; k < (config->arr_walls).size(); k++)
-            {
-            }
-            if (sherlock->getCurrentPosition().isEqual(robot->getCurrentPosition()))
-            {
-                if (robot->getRobotType() == 0)
-                {
-                    if (sherlock->getExp() > 500)
-                    {
-                        sherlock->getCurrentPosition() = criminal->getCurrentPosition();
-                    }
-                    else
-                    {
-                        robot->~Robot();
-                        BaseItem *item = robot->getItem();
-                        sherlock->getBag()->insert(item);
-                    }
-                }
-                if (robot->getRobotType() == 1)
-                {
-                    if (sherlock->getExp() > 400)
-                    {
-                        // sherlock get the robot item
-                        BaseItem *item = robot->getItem();
-                        sherlock->getBag()->insert(item);
-                        robot->~Robot();
-                    }
-                    else
-                    {
-                        sherlock->setExp(sherlock->getExp() * 0.9);
-                    }
-                }
-                if (robot->getRobotType() == 2)
-                {
-                    BaseItem *item = robot->getItem();
-                    sherlock->getBag()->insert(item);
-                }
-                if (robot->getRobotType() == 3)
-                {
-                    if (sherlock->getHP() > 335 && sherlock->getExp() > 300)
-                    {
-                        BaseItem *item = robot->getItem();
-                        sherlock->getBag()->insert(item);
-                    }
-                    else
-                    {
-                        sherlock->setHP(sherlock->getHP() * 0.85);
-                        sherlock->setExp(sherlock->getExp() * 0.85);
-                    }
-                }
-            }
         }
         if (isStop())
         {
             break;
         }
     }
+    if (verbose)
+    {
+        cout << arr_mv_objs->str() << endl;
+    }
 }
 
 int main()
 {
+    // create an example test case for sherlock watson, a map, a criminal and a robot
+    Position sherlock_init_pos(1, 3);
+    Position watson_init_pos(2, 1);
+    Position criminal_init_pos(7, 9);
+    Position robot_init_pos(3, 4);
+    Position arr_walls[3] = {Position(1, 2), Position(2, 3), Position(3, 4)};
+    Position arr_fake_walls[1] = {Position(4, 5)};
+    Map map(10, 10, 3, arr_walls, 1, arr_fake_walls);
+    ArrayMovingObject arr_mv_objs(2);
+    Sherlock sherlock(0, "RUU", sherlock_init_pos, &map, 250, 500);
+    Watson watson(1, "LU", watson_init_pos, &map, 300, 350);
+    Criminal criminal(0, criminal_init_pos, &map, &sherlock, &watson);
+    arr_mv_objs.add(&sherlock);
+    arr_mv_objs.add(&watson);
+    arr_mv_objs.add(&criminal);
+    // create an example scenario
+    sherlock.move();
+    watson.move();
+    criminal.move();
+    sherlock.move();
+    watson.move();
+    criminal.move();
+    sherlock.move();
+    watson.move();
+    criminal.move();
     return 0;
 }
