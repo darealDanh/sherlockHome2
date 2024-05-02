@@ -1424,16 +1424,6 @@ bool StudyPinkProgram::isStop() const
 
 void StudyPinkProgram::run(bool verbose)
 {
-
-    /*Phương thức run có 1 tham số là verbose. Nếu verbose bằng true thì cần in ra
-thông tin của mỗi MovingObject trong ArrayMovingObject sau khi thực hiện một
-bước di chuyển và các cập nhật sau đó nếu có (ví dụ như Watson gặp một Robot và
-thực hiện thử thách với Robot). SV tham khảo thêm initial code về vị trí của hàm
-printStep trong run. Phương thức run chạy tối đa num_steps (lấy từ tập tin
-cấu hình). Sau mỗi step nếu chương trình thỏa điều kiện dừng nêu trong phương
-thức isStop thì chương trình sẽ dừng lại. Mỗi step, chương trình sẽ lần lượt chạy
-từ đầu đến cuối một ArrayMovingObject và gọi move. Sau đó thực hiện các công
-việc như khi 2 đối tượng gặp nhau và tạo ra một robot mới*/
     for (int i = 0; i < config->num_steps; i++)
     {
         for (int j = 0; j < arr_mv_objs->size(); j++)
@@ -1453,5 +1443,30 @@ việc như khi 2 đối tượng gặp nhau và tạo ra một robot mới*/
 
 int main()
 {
+    // create an example test case for sherlock watson, a map, a criminal and a robot
+    Position sherlock_init_pos(1, 3);
+    Position watson_init_pos(2, 1);
+    Position criminal_init_pos(7, 9);
+    Position robot_init_pos(3, 4);
+    Position arr_walls[3] = {Position(1, 2), Position(2, 3), Position(3, 4)};
+    Position arr_fake_walls[1] = {Position(4, 5)};
+    Map map(10, 10, 3, arr_walls, 1, arr_fake_walls);
+    ArrayMovingObject arr_mv_objs(2);
+    Sherlock sherlock(0, "RUU", sherlock_init_pos, &map, 250, 500);
+    Watson watson(1, "LU", watson_init_pos, &map, 300, 350);
+    Criminal criminal(0, criminal_init_pos, &map, &sherlock, &watson);
+    arr_mv_objs.add(&sherlock);
+    arr_mv_objs.add(&watson);
+    arr_mv_objs.add(&criminal);
+    // create an example scenario
+    sherlock.move();
+    watson.move();
+    criminal.move();
+    sherlock.move();
+    watson.move();
+    criminal.move();
+    sherlock.move();
+    watson.move();
+    criminal.move();
     return 0;
 }
