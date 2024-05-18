@@ -1492,29 +1492,45 @@ bool StudyInPinkProgram::isStop() const
 int main()
 {
     // create an example test case for sherlock watson, a map, a criminal and a robot
-    Position sherlock_init_pos(1, 3);
-    Position watson_init_pos(2, 1);
-    Position criminal_init_pos(7, 9);
-    Position robot_init_pos(3, 4);
-    Position arr_walls[3] = {Position(1, 2), Position(2, 3), Position(3, 4)};
-    Position arr_fake_walls[1] = {Position(4, 5)};
-    Map map(10, 10, 3, arr_walls, 1, arr_fake_walls);
-    ArrayMovingObject arr_mv_objs(2);
-    Sherlock sherlock(0, "RUU", sherlock_init_pos, &map, 250, 500);
-    Watson watson(1, "LU", watson_init_pos, &map, 300, 350);
-    Criminal criminal(0, criminal_init_pos, &map, &sherlock, &watson);
-    arr_mv_objs.add(&sherlock);
-    arr_mv_objs.add(&watson);
-    arr_mv_objs.add(&criminal);
-    // create an example scenario
-    sherlock.move();
-    watson.move();
-    criminal.move();
-    sherlock.move();
-    watson.move();
-    criminal.move();
-    sherlock.move();
-    watson.move();
-    criminal.move();
+    cout << "----- Sample Testcase 01 -----" << endl;
+    int num_walls = 3;
+    Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4)};
+    int num_fake_walls = 1;
+    Position arr_fake_walls[] = {Position(2, 0)};
+
+    Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
+
+    Sherlock *sherlock = new Sherlock(1, "RUU", Position(1, 3), map, 250, 450);
+    cout << sherlock->str() << endl;
+
+    Watson *watson = new Watson(2, "LU", Position(2, 1), map, 300, 350);
+    cout << watson->str() << endl;
+
+    Criminal *criminal = new Criminal(0, Position(7, 9), map, sherlock, watson);
+    cout << criminal->str() << endl;
+
+    cout << "* Sherlock makes a move" << endl;
+    sherlock->move();
+    cout << sherlock->str() << endl;
+
+    cout << "* Watson makes a move" << endl;
+    watson->move();
+    cout << watson->str() << endl;
+
+    cout << "* Criminal makes a move" << endl;
+    criminal->move();
+    cout << criminal->str() << endl;
+
+    ArrayMovingObject *arr_mv_objs = new ArrayMovingObject(10);
+    arr_mv_objs->add(criminal);
+    arr_mv_objs->add(sherlock);
+    arr_mv_objs->add(watson);
+    cout << arr_mv_objs->str() << endl;
+
+    delete arr_mv_objs;
+    delete sherlock;
+    delete watson;
+    delete criminal;
+    delete map;
     return 0;
 }

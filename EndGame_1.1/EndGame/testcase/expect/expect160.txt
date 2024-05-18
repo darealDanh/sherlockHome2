@@ -1,0 +1,8 @@
+Step: 0000--Sherlock[index=1;pos=(11,0);moving_rule=RRRRRDRUDLD]--|--Watson[index=2;pos=(0,0);moving_rule=LRLLLUL]--|--Criminal[index=0;pos=(2,0)]
+Step: 0000--Sherlock[index=1;pos=(11,0);moving_rule=RRRRRDRUDLD]--|--Watson[index=2;pos=(0,0);moving_rule=LRLLLUL]--|--Criminal[index=0;pos=(2,0)]
+Step: 0000--Sherlock[index=1;pos=(11,0);moving_rule=RRRRRDRUDLD]--|--Watson[index=2;pos=(0,0);moving_rule=LRLLLUL]--|--Criminal[index=0;pos=(2,0)]
+Step: 0001--Sherlock[index=1;pos=(11,0);moving_rule=RRRRRDRUDLD]--|--Watson[index=2;pos=(0,0);moving_rule=LRLLLUL]--|--Criminal[index=0;pos=(1,0)]
+Step: 0001--Sherlock[index=1;pos=(11,0);moving_rule=RRRRRDRUDLD]--|--Watson[index=2;pos=(0,0);moving_rule=LRLLLUL]--|--Criminal[index=0;pos=(1,0)]
+Step: 0001--Sherlock[index=1;pos=(11,0);moving_rule=RRRRRDRUDLD]--|--Watson[index=2;pos=(0,0);moving_rule=LRLLLUL]--|--Criminal[index=0;pos=(1,0)]
+Step: 0002--Sherlock[index=1;pos=(11,0);moving_rule=RRRRRDRUDLD]--|--Watson[index=2;pos=(0,0);moving_rule=LRLLLUL]--|--Criminal[index=0;pos=(0,0)]
+Watson caught the criminal

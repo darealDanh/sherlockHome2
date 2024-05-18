@@ -1,0 +1,4 @@
+Step: 0000--Sherlock[index=1;pos=(35,34);moving_rule=UR]--|--Watson[index=2;pos=(61,11);moving_rule=L]--|--Criminal[index=0;pos=(33,19)]
+Step: 0000--Sherlock[index=1;pos=(35,34);moving_rule=UR]--|--Watson[index=2;pos=(61,11);moving_rule=L]--|--Criminal[index=0;pos=(33,19)]
+Step: 0000--Sherlock[index=1;pos=(35,34);moving_rule=UR]--|--Watson[index=2;pos=(61,10);moving_rule=L]--|--Criminal[index=0;pos=(33,19)]
+The criminal escaped

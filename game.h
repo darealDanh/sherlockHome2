@@ -177,7 +177,6 @@ public:
     virtual Position getNextPosition() = 0;
     Position getCurrentPosition() const;
     void move();
-    virtual int getDistance() = 0;
     static int countRobots;
     virtual BaseItem *getItem();
     int getRobotType() const
@@ -213,7 +212,6 @@ private:
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
-    Position getNextPosition();
     void meetRobotC(RobotC *robotC, Criminal *criminal);
     void meetRobot(Robot *robot);
     void meetWatson(Watson *watson);
@@ -232,7 +230,6 @@ private:
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
-    Position getNextPosition();
     void meetRobotC(RobotC *robotC, Criminal *criminal);
     void meetRobot(Robot *robot);
     void meetSherlock(Sherlock *sherlock);
@@ -251,7 +248,6 @@ private:
 public:
     Criminal(int index, const Position &init_pos, Map *map, Sherlock *sherlock, Watson *watson);
     string str() const;
-    Position getCurrentPosition() const;
     Position getNextPosition();
     void move();
     int getCountSteps() const
@@ -309,7 +305,6 @@ private:
 public:
     RobotSW(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *sherlock, Watson *watson);
     Position getNextPosition();
-    Position getCurrentPosition() const;
     string str() const;
     int getDistance() const;
 };

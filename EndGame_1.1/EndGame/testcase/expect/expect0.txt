@@ -1,0 +1,262 @@
+Path getType: 0
+Wall getType: 1
+FakeWall getType: 2
+Watson go in Path: 1
+Watson go in Wall: 0
+Watson go in FakeWall with EXP_0 : 0
+Watson go in FakeWall with EXP_89 : 0
+Watson go in FakeWall with EXP_90 : 0
+Sherlock go in Path: 1
+Sherlock go in Wall: 0
+Sherlock go in FakeWall: 1
+Criminal go in Path: 1
+Criminal go in Wall: 0
+Criminal go in FakeWall: 1
+Robot go in Path: 1
+Robot go in Wall: 0
+Robot go in FakeWall: 1
+Outrange (-1,0) : 0
+Outrange (0,-1) : 0
+Outrange (1,0) : 0
+Outrange (0,3) : 0
+Position: (0,0)
+Position (1,1): (1,1)
+Position String (2,2): (2,2)
+Position getRow: 0
+Position getCol: 0
+Position setRow: 1
+Position setCol: 1
+Position (0,0) isEqual (0,0): 1
+Position (0,0) isEqual (0,1): 0
+Position (0,0) isEqual (0,0): 1
+Position (0,0) isEqual (0,1): 0
+Sherlock: Sherlock[index=1;pos=(0,0);moving_rule=URDL]
+Watson: Watson[index=2;pos=(0,0);moving_rule=URDL]
+Criminal: Criminal[index=0;pos=(0,0)]
+RobotC: Robot[pos=(5,5);type=C;dist=]
+RobotS: Robot[pos=(5,5);type=S;dist=10]
+RobotW: Robot[pos=(5,5);type=W;dist=10]
+RobotSW: Robot[pos=(5,5);type=SW;dist=20]
+Sherlock: (0,0)
+Watson: (0,0)
+Criminal: (0,0)
+RobotC: (5,5)
+RobotS: (5,5)
+RobotW: (5,5)
+RobotSW: (5,5)
+Sherlock getNextPosition: (-1,-1)
+Watson getNextPosition: (-1,-1)
+Criminal getNextPosition: (1,0)
+RobotC getNextPosition: (-1,-1)
+RobotS getNextPosition: (4,5)
+RobotW getNextPosition: (4,5)
+RobotSW getNextPosition: (3,5)
+Sherlock move: Sherlock[index=1;pos=(0,0);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(0,0);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(1,0)]
+RobotC move: Robot[pos=(0,0);type=C;dist=]
+RobotS move: Robot[pos=(4,5);type=S;dist=9]
+RobotW move: Robot[pos=(4,5);type=W;dist=9]
+RobotSW move: Robot[pos=(3,5);type=SW;dist=16]
+RobotC distance Sherlock: 0
+RobotC distance Watson: 0
+RobotS distance: 9
+RobotW distance: 9
+RobotSW distance: 16
+Sherlock getNextPosition: (0,1)
+Watson getNextPosition: (0,1)
+Criminal getNextPosition: (2,0)
+RobotC getNextPosition: (0,0)
+RobotS getNextPosition: (3,5)
+RobotW getNextPosition: (3,5)
+RobotSW getNextPosition: (1,5)
+Sherlock move: Sherlock[index=1;pos=(0,1);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(0,1);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(2,0)]
+RobotC move: Robot[pos=(1,0);type=C;dist=]
+RobotS move: Robot[pos=(3,5);type=S;dist=7]
+RobotW move: Robot[pos=(3,5);type=W;dist=7]
+RobotSW move: Robot[pos=(1,5);type=SW;dist=10]
+RobotC distance Sherlock: 2
+RobotC distance Watson: 2
+RobotS distance: 7
+RobotW distance: 7
+RobotSW distance: 10
+Sherlock getNextPosition: (1,1)
+Watson getNextPosition: (1,1)
+Criminal getNextPosition: (3,0)
+RobotC getNextPosition: (1,0)
+RobotS getNextPosition: (2,5)
+RobotW getNextPosition: (2,5)
+RobotSW getNextPosition: (1,3)
+Sherlock move: Sherlock[index=1;pos=(1,1);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(1,1);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(3,0)]
+RobotC move: Robot[pos=(2,0);type=C;dist=]
+RobotS move: Robot[pos=(2,5);type=S;dist=5]
+RobotW move: Robot[pos=(2,5);type=W;dist=5]
+RobotSW move: Robot[pos=(1,3);type=SW;dist=4]
+RobotC distance Sherlock: 2
+RobotC distance Watson: 2
+RobotS distance: 5
+RobotW distance: 5
+RobotSW distance: 4
+Sherlock getNextPosition: (1,0)
+Watson getNextPosition: (1,0)
+Criminal getNextPosition: (4,0)
+RobotC getNextPosition: (2,0)
+RobotS getNextPosition: (1,5)
+RobotW getNextPosition: (1,5)
+RobotSW getNextPosition: (1,1)
+Sherlock move: Sherlock[index=1;pos=(1,0);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(1,0);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(4,0)]
+RobotC move: Robot[pos=(3,0);type=C;dist=]
+RobotS move: Robot[pos=(1,5);type=S;dist=5]
+RobotW move: Robot[pos=(1,5);type=W;dist=5]
+RobotSW move: Robot[pos=(1,1);type=SW;dist=2]
+RobotC distance Sherlock: 2
+RobotC distance Watson: 2
+RobotS distance: 5
+RobotW distance: 5
+RobotSW distance: 2
+Sherlock getNextPosition: (0,0)
+Watson getNextPosition: (0,0)
+Criminal getNextPosition: (5,0)
+RobotC getNextPosition: (3,0)
+RobotS getNextPosition: (1,4)
+RobotW getNextPosition: (1,4)
+RobotSW getNextPosition: (2,0)
+Sherlock move: Sherlock[index=1;pos=(0,0);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(0,0);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(5,0)]
+RobotC move: Robot[pos=(4,0);type=C;dist=]
+RobotS move: Robot[pos=(0,5);type=S;dist=5]
+RobotW move: Robot[pos=(0,5);type=W;dist=5]
+RobotSW move: Robot[pos=(0,0);type=SW;dist=0]
+RobotC distance Sherlock: 4
+RobotC distance Watson: 4
+RobotS distance: 5
+RobotW distance: 5
+RobotSW distance: 0
+Sherlock getNextPosition: (0,1)
+Watson getNextPosition: (0,1)
+Criminal getNextPosition: (6,0)
+RobotC getNextPosition: (4,0)
+RobotS getNextPosition: (0,4)
+RobotW getNextPosition: (0,4)
+RobotSW getNextPosition: (0,2)
+Sherlock move: Sherlock[index=1;pos=(0,1);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(0,1);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(6,0)]
+RobotC move: Robot[pos=(5,0);type=C;dist=]
+RobotS move: Robot[pos=(0,4);type=S;dist=3]
+RobotW move: Robot[pos=(0,4);type=W;dist=3]
+RobotSW move: Robot[pos=(0,2);type=SW;dist=2]
+RobotC distance Sherlock: 6
+RobotC distance Watson: 6
+RobotS distance: 3
+RobotW distance: 3
+RobotSW distance: 2
+Sherlock getNextPosition: (1,1)
+Watson getNextPosition: (1,1)
+Criminal getNextPosition: (7,0)
+RobotC getNextPosition: (5,0)
+RobotS getNextPosition: (0,3)
+RobotW getNextPosition: (0,3)
+RobotSW getNextPosition: (1,1)
+Sherlock move: Sherlock[index=1;pos=(1,1);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(1,1);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(7,0)]
+RobotC move: Robot[pos=(6,0);type=C;dist=]
+RobotS move: Robot[pos=(1,4);type=S;dist=3]
+RobotW move: Robot[pos=(1,4);type=W;dist=3]
+RobotSW move: Robot[pos=(1,1);type=SW;dist=0]
+RobotC distance Sherlock: 6
+RobotC distance Watson: 6
+RobotS distance: 3
+RobotW distance: 3
+RobotSW distance: 0
+Sherlock getNextPosition: (1,0)
+Watson getNextPosition: (1,0)
+Criminal getNextPosition: (8,0)
+RobotC getNextPosition: (6,0)
+RobotS getNextPosition: (1,3)
+RobotW getNextPosition: (1,3)
+RobotSW getNextPosition: (0,2)
+Sherlock move: Sherlock[index=1;pos=(1,0);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(1,0);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(8,0)]
+RobotC move: Robot[pos=(7,0);type=C;dist=]
+RobotS move: Robot[pos=(1,3);type=S;dist=3]
+RobotW move: Robot[pos=(1,3);type=W;dist=3]
+RobotSW move: Robot[pos=(2,0);type=SW;dist=2]
+RobotC distance Sherlock: 6
+RobotC distance Watson: 6
+RobotS distance: 3
+RobotW distance: 3
+RobotSW distance: 2
+Sherlock getNextPosition: (0,0)
+Watson getNextPosition: (0,0)
+Criminal getNextPosition: (9,0)
+RobotC getNextPosition: (7,0)
+RobotS getNextPosition: (1,2)
+RobotW getNextPosition: (1,2)
+RobotSW getNextPosition: (0,0)
+Sherlock move: Sherlock[index=1;pos=(0,0);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(0,0);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(9,0)]
+RobotC move: Robot[pos=(8,0);type=C;dist=]
+RobotS move: Robot[pos=(0,3);type=S;dist=3]
+RobotW move: Robot[pos=(0,3);type=W;dist=3]
+RobotSW move: Robot[pos=(0,0);type=SW;dist=0]
+RobotC distance Sherlock: 8
+RobotC distance Watson: 8
+RobotS distance: 3
+RobotW distance: 3
+RobotSW distance: 0
+Sherlock getNextPosition: (0,1)
+Watson getNextPosition: (0,1)
+Criminal getNextPosition: (9,1)
+RobotC getNextPosition: (8,0)
+RobotS getNextPosition: (0,2)
+RobotW getNextPosition: (0,2)
+RobotSW getNextPosition: (0,2)
+Sherlock move: Sherlock[index=1;pos=(0,1);moving_rule=URDL]
+Watson move: Watson[index=2;pos=(0,1);moving_rule=URDL]
+Criminal move: Criminal[index=0;pos=(8,0)]
+RobotC move: Robot[pos=(9,0);type=C;dist=]
+RobotS move: Robot[pos=(0,2);type=S;dist=1]
+RobotW move: Robot[pos=(0,2);type=W;dist=1]
+RobotSW move: Robot[pos=(0,2);type=SW;dist=2]
+RobotC distance Sherlock: 10
+RobotC distance Watson: 10
+RobotS distance: 1
+RobotW distance: 1
+RobotSW distance: 2
+isFull: 0
+ArrayMovingObject str: ArrayMovingObject[count=0;capacity=7;]
+ArrayMovingObject add: 1
+isFull: 0
+ArrayMovingObject str: ArrayMovingObject[count=1;capacity=7;Criminal[index=0;pos=(8,0)]]
+ArrayMovingObject add: 1
+isFull: 0
+ArrayMovingObject str: ArrayMovingObject[count=2;capacity=7;Criminal[index=0;pos=(8,0)];Sherlock[index=1;pos=(0,1);moving_rule=URDL]]
+ArrayMovingObject add: 1
+isFull: 0
+ArrayMovingObject str: ArrayMovingObject[count=3;capacity=7;Criminal[index=0;pos=(8,0)];Sherlock[index=1;pos=(0,1);moving_rule=URDL];Watson[index=2;pos=(0,1);moving_rule=URDL]]
+ArrayMovingObject add: 1
+isFull: 0
+ArrayMovingObject str: ArrayMovingObject[count=4;capacity=7;Criminal[index=0;pos=(8,0)];Sherlock[index=1;pos=(0,1);moving_rule=URDL];Watson[index=2;pos=(0,1);moving_rule=URDL];Robot[pos=(9,0);type=C;dist=]]
+ArrayMovingObject add: 1
+isFull: 0
+ArrayMovingObject str: ArrayMovingObject[count=5;capacity=7;Criminal[index=0;pos=(8,0)];Sherlock[index=1;pos=(0,1);moving_rule=URDL];Watson[index=2;pos=(0,1);moving_rule=URDL];Robot[pos=(9,0);type=C;dist=];Robot[pos=(0,2);type=S;dist=1]]
+ArrayMovingObject add: 1
+isFull: 0
+ArrayMovingObject str: ArrayMovingObject[count=6;capacity=7;Criminal[index=0;pos=(8,0)];Sherlock[index=1;pos=(0,1);moving_rule=URDL];Watson[index=2;pos=(0,1);moving_rule=URDL];Robot[pos=(9,0);type=C;dist=];Robot[pos=(0,2);type=S;dist=1];Robot[pos=(0,2);type=W;dist=1]]
+ArrayMovingObject add: 1
+isFull: 1
+ArrayMovingObject str: ArrayMovingObject[count=7;capacity=7;Criminal[index=0;pos=(8,0)];Sherlock[index=1;pos=(0,1);moving_rule=URDL];Watson[index=2;pos=(0,1);moving_rule=URDL];Robot[pos=(9,0);type=C;dist=];Robot[pos=(0,2);type=S;dist=1];Robot[pos=(0,2);type=W;dist=1];Robot[pos=(0,2);type=SW;dist=2]]
+ArrayMovingObject add: 0
+isFull: 1
+ArrayMovingObject str: ArrayMovingObject[count=7;capacity=7;Criminal[index=0;pos=(8,0)];Sherlock[index=1;pos=(0,1);moving_rule=URDL];Watson[index=2;pos=(0,1);moving_rule=URDL];Robot[pos=(9,0);type=C;dist=];Robot[pos=(0,2);type=S;dist=1];Robot[pos=(0,2);type=W;dist=1];Robot[pos=(0,2);type=SW;dist=2]]

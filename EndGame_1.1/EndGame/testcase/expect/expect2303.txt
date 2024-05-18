@@ -1,0 +1,2 @@
+Step: 0000--Sherlock[index=1;pos=(5,0);moving_rule=RDLR]--|--Watson[index=2;pos=(0,0);moving_rule=UDUR]--|--Criminal[index=0;pos=(5,0)]
+Sherlock caught the criminal

@@ -1,0 +1,11 @@
+Step: 0000--Sherlock[index=1;pos=(90,2);moving_rule=LDURD]--|--Watson[index=2;pos=(0,23);moving_rule=RLLR]--|--Criminal[index=0;pos=(80,18)]
+Step: 0000--Sherlock[index=1;pos=(90,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,23);moving_rule=RLLR]--|--Criminal[index=0;pos=(80,18)]
+Step: 0000--Sherlock[index=1;pos=(90,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,23);moving_rule=RLLR]--|--Criminal[index=0;pos=(80,18)]
+Step: 0001--Sherlock[index=1;pos=(90,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,23);moving_rule=RLLR]--|--Criminal[index=0;pos=(79,18)]
+Step: 0001--Sherlock[index=1;pos=(91,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,23);moving_rule=RLLR]--|--Criminal[index=0;pos=(79,18)]
+Step: 0001--Sherlock[index=1;pos=(91,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,22);moving_rule=RLLR]--|--Criminal[index=0;pos=(79,18)]
+Step: 0002--Sherlock[index=1;pos=(91,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,22);moving_rule=RLLR]--|--Criminal[index=0;pos=(79,17)]
+Step: 0002--Sherlock[index=1;pos=(90,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,22);moving_rule=RLLR]--|--Criminal[index=0;pos=(79,17)]
+Step: 0002--Sherlock[index=1;pos=(90,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,21);moving_rule=RLLR]--|--Criminal[index=0;pos=(79,17)]
+Step: 0002--Sherlock[index=1;pos=(90,1);moving_rule=LDURD]--|--Watson[index=2;pos=(0,21);moving_rule=RLLR]--|--Criminal[index=0;pos=(79,17)]
+The criminal escaped

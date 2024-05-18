@@ -1,0 +1,4 @@
+Step: 0000--Sherlock[index=1;pos=(0,17);moving_rule=D]--|--Watson[index=2;pos=(0,7);moving_rule=R]--|--Criminal[index=0;pos=(0,8)]
+Step: 0000--Sherlock[index=1;pos=(0,17);moving_rule=D]--|--Watson[index=2;pos=(0,7);moving_rule=R]--|--Criminal[index=0;pos=(0,8)]
+Step: 0000--Sherlock[index=1;pos=(0,17);moving_rule=D]--|--Watson[index=2;pos=(0,8);moving_rule=R]--|--Criminal[index=0;pos=(0,8)]
+Watson caught the criminal
