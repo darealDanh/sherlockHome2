@@ -203,36 +203,25 @@ public:
 };
 class Sherlock /* TODO */ : public Character
 {
-private:
-    Robot *robot;
-    Criminal *criminal;
-    Watson *watson;
-
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
-    void meetRobotC(RobotC *robotC, Criminal *criminal);
-    void meetRobot(Robot *robot);
-    void meetWatson(Watson *watson);
-    void meetCriminal(Criminal *criminal);
+    bool meetRobotC(Robot *robot, Criminal *criminal);
+    bool meetRobot(Robot *robot);
+    bool meetWatson(Watson *watson);
+    bool meetCriminal(Criminal *criminal);
     void move();
 };
 
 class Watson /* TODO */ : public Character
 {
-private:
-    Robot *robot;
-    RobotC *robotC;
-    Criminal *criminal;
-    Sherlock *sherlock;
-
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
-    void meetRobotC(RobotC *robotC, Criminal *criminal);
-    void meetRobot(Robot *robot);
-    void meetSherlock(Sherlock *sherlock);
-    void meetCriminal(Criminal *criminal);
+    bool meetRobotC(Robot *robot, Criminal *criminal);
+    bool meetRobot(Robot *robot);
+    bool meetSherlock(Sherlock *sherlock);
+    bool meetCriminal(Criminal *criminal);
     void move();
 };
 
@@ -485,28 +474,7 @@ public:
              << sherlock->str() << "--|--" << watson->str() << "--|--" << criminal->str() << endl;
     }
 
-    void run(bool verbose)
-    {
-        // Note: This is a sample code. You can change the implementation as you like.
-        // TODO
-        for (int istep = 0; istep < config->num_steps; ++istep)
-        {
-            for (int i = 0; i < arr_mv_objs->size(); ++i)
-            {
-                arr_mv_objs->get(i)->move();
-                if (isStop())
-                {
-                    printStep(istep);
-                    break;
-                }
-                if (verbose)
-                {
-                    printStep(istep);
-                }
-            }
-        }
-        printResult();
-    }
+    void run(bool verbose);
 
     ~StudyInPinkProgram();
 };
