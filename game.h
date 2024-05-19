@@ -205,7 +205,6 @@ class Sherlock /* TODO */ : public Character
 {
 private:
     Robot *robot;
-    RobotC *robotC;
     Criminal *criminal;
     Watson *watson;
 
@@ -417,7 +416,6 @@ private:
 
 public:
     ArrayMovingObject(int capacity);
-
     ~ArrayMovingObject();
     bool isFull() const;
     bool add(MovingObject *mv_obj);

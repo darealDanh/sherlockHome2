@@ -110,6 +110,10 @@ Map::~Map()
 {
     for (int i = 0; i < num_rows; i++)
     {
+        for (int j = 0; j < num_cols; j++)
+        {
+            delete map[i][j];
+        }
         delete[] map[i];
     }
     delete[] map;
@@ -163,11 +167,6 @@ bool Position::isEqual(const Position &pos) const
 
 Character::Character(int index, const Position &init_pos, Map *map, const string &name) : MovingObject(index, init_pos, map, name)
 {
-    // finish this constructor
-    this->index = index;
-    this->pos = init_pos;
-    this->map = map;
-    this->name = name;
 }
 
 Position Character::getCurrentPosition() const
@@ -235,7 +234,7 @@ void Character::move()
     pos = next_pos;
 }
 
-Sherlock::Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, pos, map, "Sherlock")
+Sherlock::Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, init_pos, map, "Sherlock")
 {
     // finish the constructor
     this->moving_rule = moving_rule;
@@ -272,6 +271,7 @@ void Sherlock::move()
         {
             BaseItem *item = this->bag->get(ItemType::PASSING_CARD);
             item->use(this, robot);
+            robot = nullptr;
         }
         else
         {
@@ -397,7 +397,6 @@ void Sherlock::meetWatson(Watson *watson)
 
 void Sherlock::meetCriminal(Criminal *criminal)
 {
-    this->getNextPosition() = criminal->getCurrentPosition();
 }
 
 Watson::Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, init_pos, map, "Watson")
@@ -431,6 +430,7 @@ void Watson::meetRobotC(RobotC *robotC, Criminal *criminal)
 {
     BaseItem *item = robotC->getItem();
     this->bag->insert(item);
+    robotC = nullptr;
 }
 
 void Watson::meetRobot(Robot *robot)
@@ -441,6 +441,7 @@ void Watson::meetRobot(Robot *robot)
         {
             BaseItem *item = robot->getItem();
             this->bag->insert(item);
+            robot = nullptr;
         }
         else
         {
@@ -453,6 +454,7 @@ void Watson::meetRobot(Robot *robot)
         {
             BaseItem *item = robot->getItem();
             this->bag->insert(item);
+            robot = nullptr;
         }
         else
         {
@@ -464,7 +466,6 @@ void Watson::meetRobot(Robot *robot)
 
 void Watson::meetCriminal(Criminal *criminal)
 {
-    pos = criminal->getCurrentPosition();
 }
 
 void Watson::move()
@@ -601,7 +602,7 @@ Position Criminal::getNextPosition()
 
 void Criminal::move()
 {
-    if (countSteps == 3)
+    if (countSteps = 3)
     {
         /*Nếu là robot đầu tiên được tạo ra trên bản đồ, đó sẽ là loại robot RobotC. Nếu không,
 ta xét khoảng cách từ Robot đến Sherlock và Watson:
@@ -648,17 +649,21 @@ ArrayMovingObject::ArrayMovingObject(int capacity)
 {
     this->capacity = capacity;
     this->count = 0;
-    // create an new array of MovingObject with the size of capacity
     arr_mv_objs = new MovingObject *[capacity];
+    // set every element of the array to nullptr
+    for (int i = 0; i < capacity; i++)
+    {
+        arr_mv_objs[i] = nullptr;
+    }
 }
 
 ArrayMovingObject::~ArrayMovingObject()
 {
-    for (int i = 0; i < capacity; i++)
+    if (arr_mv_objs != nullptr)
     {
-        delete arr_mv_objs[i];
+        delete[] arr_mv_objs;
+        arr_mv_objs = nullptr;
     }
-    delete[] arr_mv_objs;
 }
 
 bool ArrayMovingObject::isFull() const
@@ -701,7 +706,7 @@ string ArrayMovingObject::str() const
     string res = "ArrayMovingObject [ count =" + to_string(count) + "; capacity =" + to_string(capacity) + "; ";
     for (int i = 0; i < count; i++)
     {
-        res += arr_mv_objs[i]->str() + "; ";
+        res += get(i)->str() + "; ";
     }
     res += "]";
     return res;
