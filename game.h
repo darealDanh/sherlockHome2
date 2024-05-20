@@ -301,50 +301,43 @@ public:
 
 class BaseItem
 {
-protected:
-    ItemType item_type;
-    Character *obj;
-    Robot *robot;
-
 public:
-    int value;
-    BaseItem *next;
-    BaseItem(ItemType item_type, int value);
+    BaseItem();
     virtual bool canUse(Character *obj, Robot *robot) = 0;
     virtual void use(Character *obj, Robot *robot) = 0;
-    ItemType getItemType() const;
+    virtual ItemType getItemType() const = 0;
 };
 
 class MagicBook : public BaseItem
 {
 public:
-    MagicBook();
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
+    ItemType getItemType() const;
 };
 
 class EnergyDrink : public BaseItem
 {
 public:
-    EnergyDrink();
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
+    ItemType getItemType() const;
 };
 
 class FirstAid : public BaseItem
 {
 public:
-    FirstAid();
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
+    ItemType getItemType() const;
 };
 
 class ExemptionCard : public BaseItem
 {
 public:
-    ExemptionCard();
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
+    ItemType getItemType() const;
 };
 
 class PassingCard : public BaseItem
@@ -357,18 +350,30 @@ public:
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
     string getChallenge();
+    ItemType getItemType() const;
 };
 
 class BaseBag
 {
 protected:
-    BaseItem *head;
-    BaseItem *tail;
+    class Node
+    {
+    public:
+        BaseItem *item;
+        Node *next;
+
+    public:
+        Node(BaseItem *item, Node *next = nullptr) : item(item), next(next) {}
+    };
+
+protected:
+    Node *head;
     Character *character;
+    int capacity;
     int countItem;
 
 public:
-    BaseBag(Character *character);
+    BaseBag(int capacity);
     ~BaseBag();
     virtual bool insert(BaseItem *item);
     virtual BaseItem *get();
@@ -387,7 +392,6 @@ private:
 
 public:
     WatsonBag(Watson *watson);
-    BaseItem *get();
 };
 
 class SherlockBag : public BaseBag
@@ -397,7 +401,6 @@ private:
 
 public:
     SherlockBag(Sherlock *sherlock);
-    BaseItem *get();
 };
 
 class ArrayMovingObject

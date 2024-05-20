@@ -423,8 +423,8 @@ bool Watson::meetRobotC(Robot *robot, Criminal *criminal)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
-        BaseItem *item = robot->getItem();
-        this->bag->insert(item);
+        BaseItem *itemGet = robot->getItem();
+        this->bag->insert(itemGet);
         robot = nullptr;
         ItemType item = ItemType::MAGIC_BOOK;
         BaseItem *magicbook = this->bag->get(item);
@@ -433,7 +433,7 @@ bool Watson::meetRobotC(Robot *robot, Criminal *criminal)
             magicbook->use(this, robot);
             magicbook = this->bag->get(item);
         }
-        ItemType item = ItemType::FIRST_AID;
+        item = ItemType::FIRST_AID;
         BaseItem *firstaid = this->bag->get(item);
         while (firstaid != nullptr)
         {
@@ -581,36 +581,6 @@ Position Criminal::getNextPosition()
 
 void Criminal::move()
 {
-    //     if (countSteps = 3)
-    //     {
-    //         /*Nếu là robot đầu tiên được tạo ra trên bản đồ, đó sẽ là loại robot RobotC. Nếu không,
-    // ta xét khoảng cách từ Robot đến Sherlock và Watson:
-    // • Nếu khoảng cách đến Sherlock gần hơn: Tạo ra loại robot RobotS
-    // • Khoảng cách đến Watson gần hơn: Tạo ra loại robot RobotW
-    // • Khoảng cách đến Sherlock và Watson là bằng nhau: Tạo ra loại robot RobotSW*/
-    //         if (Robot::countRobots == 0)
-    //         {
-    //             *robot = RobotC(0, pos, map, this);
-    //         }
-    //         else
-    //         {
-    //             int distanceS = abs(pos.getRow() - sherlock->getCurrentPosition().getRow()) + abs(pos.getCol() - sherlock->getCurrentPosition().getCol());
-    //             int distanceW = abs(pos.getRow() - watson->getCurrentPosition().getRow()) + abs(pos.getCol() - watson->getCurrentPosition().getCol());
-    //             if (distanceS < distanceW)
-    //             {
-    //                 *robot = RobotS(0, pos, map, this, sherlock);
-    //             }
-    //             else if (distanceS > distanceW)
-    //             {
-    //                 *robot = RobotW(0, pos, map, this, watson);
-    //             }
-    //             else
-    //             {
-    //                 *robot = RobotSW(0, pos, map, this, sherlock, watson);
-    //             }
-    //         }
-    //         countSteps = 0;
-    //     }
     Position next_pos = getNextPosition();
     if (&next_pos == &Position::npos)
     {
@@ -1212,12 +1182,6 @@ string RobotSW::str() const
     return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
 }
 
-BaseItem::BaseItem(ItemType item_type, int value)
-{
-    this->item_type = item_type;
-    this->value = value;
-}
-
 bool BaseItem::canUse(Character *obj, Robot *robot)
 {
     // get the object inside the robot and check if the obj can use the item
@@ -1228,12 +1192,32 @@ bool BaseItem::canUse(Character *obj, Robot *robot)
     return false;
 }
 
-ItemType BaseItem::getItemType() const
+ItemType MagicBook::getItemType() const
 {
-    return item_type;
+    return MAGIC_BOOK;
 }
 
-MagicBook::MagicBook() : BaseItem(ItemType::MAGIC_BOOK, 0)
+ItemType EnergyDrink::getItemType() const
+{
+    return ENERGY_DRINK;
+}
+
+ItemType FirstAid::getItemType() const
+{
+    return FIRST_AID;
+}
+
+ItemType ExemptionCard::getItemType() const
+{
+    return EXCEMPTION_CARD;
+}
+
+ItemType PassingCard::getItemType() const
+{
+    return PASSING_CARD;
+}
+
+MagicBook::MagicBook()
 {
 }
 
@@ -1254,10 +1238,6 @@ void MagicBook::use(Character *obj, Robot *robot)
     }
 }
 
-EnergyDrink::EnergyDrink() : BaseItem(ItemType::ENERGY_DRINK, 0)
-{
-}
-
 bool EnergyDrink::canUse(Character *obj, Robot *robot)
 {
     if (obj->getHP() <= 100)
@@ -1273,10 +1253,6 @@ void EnergyDrink::use(Character *obj, Robot *robot)
     {
         obj->setHP(obj->getHP() * 1.2);
     }
-}
-
-FirstAid::FirstAid() : BaseItem(ItemType::FIRST_AID, 0)
-{
 }
 
 bool FirstAid::canUse(Character *obj, Robot *robot)
@@ -1296,10 +1272,6 @@ void FirstAid::use(Character *obj, Robot *robot)
     }
 }
 
-ExemptionCard::ExemptionCard() : BaseItem(ItemType::EXCEMPTION_CARD, 0)
-{
-}
-
 bool ExemptionCard::canUse(Character *obj, Robot *robot)
 {
     if (obj->getName() == "Sherlock" && obj->getHP() % 2 != 0)
@@ -1315,7 +1287,7 @@ void ExemptionCard::use(Character *obj, Robot *robot)
     obj->setHP(obj->getHP());
 }
 
-PassingCard::PassingCard(const string &challenges) : BaseItem(ItemType::PASSING_CARD, 0)
+PassingCard::PassingCard(const string &challenges)
 {
     this->challenges = challenges;
 }
@@ -1344,10 +1316,9 @@ void PassingCard::use(Character *obj, Robot *robot)
     }
 }
 
-BaseBag::BaseBag(Character *character)
+BaseBag::BaseBag(int capacity)
 {
     this->head = nullptr;
-    this->tail = nullptr;
     this->countItem = 0;
 }
 
@@ -1355,7 +1326,7 @@ BaseBag::~BaseBag()
 {
     while (head != nullptr)
     {
-        BaseItem *temp = head;
+        Node *temp = head;
         head = head->next;
         delete temp;
     }
@@ -1368,88 +1339,86 @@ bool BaseBag::insert(BaseItem *item)
     {
         if (countItem <= 13)
         {
-            if (head == nullptr)
-            {
-                head = item;
-                tail = item;
-            }
-            else
-            {
-                item->next = head;
-                head = item;
-            }
+            Node *newNode = new Node(item, head);
+            head = newNode;
+            countItem++;
+            return true;
         }
-        else
-            return false;
     }
-    else if (character->getName() == "Watson")
+    if (character->getName() == "Watson")
     {
         if (countItem <= 15)
         {
-            if (head == nullptr)
-            {
-                head = item;
-                tail = item;
-            }
-            else
-            {
-                item->next = head;
-                head = item;
-            }
+            Node *newNode = new Node(item, head);
+            head = newNode;
+            countItem++;
+            return true;
         }
-        else
-            return false;
     }
-    else
-        return false;
-    countItem++;
-    return true;
+    return false;
 };
 
 BaseItem *BaseBag::get()
 {
-    BaseItem *temp = head;
-    while (temp != nullptr)
+    Node *current = head;
+    while (current != nullptr)
     {
-        if (temp->canUse(character, nullptr))
+        if (current->item->canUse(character, nullptr))
         {
-            BaseItem *temp2 = head;
-            head = temp;
-            temp = temp2;
-            return temp;
-        }
-        temp = temp->next;
-    }
-    return nullptr;
-};
-
-BaseItem *BaseBag::get(ItemType item_type)
-{
-    BaseItem *temp = head;
-    while (temp != nullptr)
-    {
-        if (temp->getItemType() == item_type)
-        {
-            if (temp == head)
+            // This item can be used, so remove it from the list and return it
+            if (current == head)
             {
-                BaseItem *result = temp;
-                delete temp;
-                return result;
+                // The item is at the head of the list
+                head = current->next;
             }
             else
             {
-                // switch the temp with the head, return the temp and delete temp
-                BaseItem *temp2 = head;
-                head = temp;
-                temp = temp2;
-                BaseItem *result = temp;
-                delete temp;
-                return result;
+                // The item is somewhere in the middle or at the end of the list
+                Node *previous = head;
+                while (previous->next != current)
+                {
+                    previous = previous->next;
+                }
+                previous->next = current->next;
             }
+            BaseItem *item = current->item;
+            delete current;
+            countItem--;
+            return item;
         }
-        temp = temp->next;
+        current = current->next;
     }
-    return nullptr;
+    return nullptr; // No usable item was found
+}
+
+BaseItem *BaseBag::get(ItemType item_type)
+{
+    Node *current = head;
+    Node *previous = nullptr;
+    while (current != nullptr)
+    {
+        if (current->item->getItemType() == item_type)
+        {
+            // Found the item, now remove it from the list
+            if (previous == nullptr)
+            {
+                // The item is at the head of the list
+                head = current->next;
+            }
+            else
+            {
+                // The item is somewhere in the middle or at the end of the list
+                previous->next = current->next;
+            }
+            BaseItem *item = current->item;
+            delete current;
+            countItem--;
+            return item;
+        }
+        previous = current;
+        current = current->next;
+    }
+    return nullptr; // The item is not in the list
 };
 
 string BaseBag::str() const
@@ -1526,8 +1495,6 @@ void StudyInPinkProgram::run(bool verbose)
                 watson->meetSherlock(sherlock);
                 watson->meetRobot(robot);
                 watson->meetRobotC(robot, criminal);
-            }
-            {
             }
             if (isStop())
             {
