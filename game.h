@@ -171,14 +171,16 @@ class Robot : public MovingObject
 protected:
     RobotType robot_type;
     BaseItem *item;
+    Criminal *criminal;
 
 public:
-    Robot(int index, const Position &init_pos, Map *map, RobotType robot_type);
+    Robot(int index, const Position &init_pos, Map *map, Criminal *criminal, RobotType robot_type);
     virtual Position getNextPosition() = 0;
     Position getCurrentPosition() const;
     void move();
-    static int countRobots;
     virtual BaseItem *getItem();
+    static int countRobots;
+    static Robot *create(int index, Map *map, Criminal *criminal, Sherlock *sherlock, Watson *watson);
     int getRobotType() const
     {
         return robot_type;
@@ -385,6 +387,7 @@ private:
 
 public:
     WatsonBag(Watson *watson);
+    BaseItem *get();
 };
 
 class SherlockBag : public BaseBag
@@ -394,6 +397,7 @@ private:
 
 public:
     SherlockBag(Sherlock *sherlock);
+    BaseItem *get();
 };
 
 class ArrayMovingObject

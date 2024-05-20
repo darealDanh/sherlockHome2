@@ -531,36 +531,6 @@ void Watson::move()
         return;
     }
     pos = next_pos;
-    if (pos.isEqual(sherlock->getCurrentPosition()))
-    {
-        meetSherlock(sherlock);
-    }
-    if (pos.isEqual(criminal->getCurrentPosition()))
-    {
-        meetCriminal(criminal);
-    }
-    if (pos.isEqual(robot->getCurrentPosition()))
-    {
-
-        else
-        {
-            meetRobot(robot);
-            // if watson has magicbook, firstaid or energydrink, use it now
-        }
-    }
-    if (pos.isEqual(robotC->getCurrentPosition()))
-    {
-        if (this->bag->get(ItemType::EXCEMPTION_CARD) != nullptr)
-        {
-            BaseItem *item = this->bag->get(ItemType::EXCEMPTION_CARD);
-            item->use(this, robotC);
-        }
-        else
-        {
-            meetRobotC(robotC, criminal);
-            // if watson has magicbook, firstaid or energydrink, use it now
-        }
-    };
 }
 
 string Criminal::str() const
@@ -611,36 +581,36 @@ Position Criminal::getNextPosition()
 
 void Criminal::move()
 {
-    if (countSteps = 3)
-    {
-        /*Nếu là robot đầu tiên được tạo ra trên bản đồ, đó sẽ là loại robot RobotC. Nếu không,
-ta xét khoảng cách từ Robot đến Sherlock và Watson:
-• Nếu khoảng cách đến Sherlock gần hơn: Tạo ra loại robot RobotS
-• Khoảng cách đến Watson gần hơn: Tạo ra loại robot RobotW
-• Khoảng cách đến Sherlock và Watson là bằng nhau: Tạo ra loại robot RobotSW*/
-        if (Robot::countRobots == 0)
-        {
-            *robot = RobotC(0, pos, map, this);
-        }
-        else
-        {
-            int distanceS = abs(pos.getRow() - sherlock->getCurrentPosition().getRow()) + abs(pos.getCol() - sherlock->getCurrentPosition().getCol());
-            int distanceW = abs(pos.getRow() - watson->getCurrentPosition().getRow()) + abs(pos.getCol() - watson->getCurrentPosition().getCol());
-            if (distanceS < distanceW)
-            {
-                *robot = RobotS(0, pos, map, this, sherlock);
-            }
-            else if (distanceS > distanceW)
-            {
-                *robot = RobotW(0, pos, map, this, watson);
-            }
-            else
-            {
-                *robot = RobotSW(0, pos, map, this, sherlock, watson);
-            }
-        }
-        countSteps = 0;
-    }
+    //     if (countSteps = 3)
+    //     {
+    //         /*Nếu là robot đầu tiên được tạo ra trên bản đồ, đó sẽ là loại robot RobotC. Nếu không,
+    // ta xét khoảng cách từ Robot đến Sherlock và Watson:
+    // • Nếu khoảng cách đến Sherlock gần hơn: Tạo ra loại robot RobotS
+    // • Khoảng cách đến Watson gần hơn: Tạo ra loại robot RobotW
+    // • Khoảng cách đến Sherlock và Watson là bằng nhau: Tạo ra loại robot RobotSW*/
+    //         if (Robot::countRobots == 0)
+    //         {
+    //             *robot = RobotC(0, pos, map, this);
+    //         }
+    //         else
+    //         {
+    //             int distanceS = abs(pos.getRow() - sherlock->getCurrentPosition().getRow()) + abs(pos.getCol() - sherlock->getCurrentPosition().getCol());
+    //             int distanceW = abs(pos.getRow() - watson->getCurrentPosition().getRow()) + abs(pos.getCol() - watson->getCurrentPosition().getCol());
+    //             if (distanceS < distanceW)
+    //             {
+    //                 *robot = RobotS(0, pos, map, this, sherlock);
+    //             }
+    //             else if (distanceS > distanceW)
+    //             {
+    //                 *robot = RobotW(0, pos, map, this, watson);
+    //             }
+    //             else
+    //             {
+    //                 *robot = RobotSW(0, pos, map, this, sherlock, watson);
+    //             }
+    //         }
+    //         countSteps = 0;
+    //     }
     Position next_pos = getNextPosition();
     if (&next_pos == &Position::npos)
     {
@@ -938,10 +908,11 @@ string Configuration::str() const
     return res;
 }
 
-Robot::Robot(int index, const Position &init_pos, Map *map, RobotType robot_type) : MovingObject(index, init_pos, map, "Robot")
+Robot::Robot(int index, const Position &init_pos, Map *map, Criminal *criminal, RobotType robot_type) : MovingObject(index, init_pos, map, "Robot")
 
 {
     this->robot_type = robot_type;
+    this->criminal = criminal;
     /*Gọi vị trí tạo ra robot có toạ độ là (i,j) với i là chỉ số hàng, j là chỉ số cột.
 Với p = i ∗ j. Gọi s số chủ đạo của p . Ta định nghĩa số chủ đạo của một số là giá trị tổng
 các chữ số, cho đến khi giá trị tổng đó là số có 1 chữ số*/
@@ -1017,17 +988,43 @@ void Robot::move()
     pos = next_pos;
 }
 
-int Robot::countRobots = 0;
-
 BaseItem *Robot::getItem()
 {
     return item;
 }
 
-RobotC::RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal) : Robot(index, init_pos, map, C)
+int Robot::countRobots = 0;
+
+Robot *Robot::create(int index, Map *map, Criminal *criminal, Sherlock *sherlock, Watson *watson)
 {
-    this->criminal = criminal;
-    countRobots++;
+    Robot *robot;
+    Position pos = criminal->getCurrentPosition();
+    if (Robot::countRobots == 0)
+    {
+        *robot = RobotC(0, pos, map, criminal);
+    }
+    else
+    {
+        int distanceS = abs(pos.getRow() - sherlock->getCurrentPosition().getRow()) + abs(pos.getCol() - sherlock->getCurrentPosition().getCol());
+        int distanceW = abs(pos.getRow() - watson->getCurrentPosition().getRow()) + abs(pos.getCol() - watson->getCurrentPosition().getCol());
+        if (distanceS < distanceW)
+        {
+            *robot = RobotS(0, pos, map, criminal, sherlock);
+        }
+        else if (distanceS > distanceW)
+        {
+            *robot = RobotW(0, pos, map, criminal, watson);
+        }
+        else
+        {
+            *robot = RobotSW(0, pos, map, criminal, sherlock, watson);
+        }
+    }
+    return robot;
+}
+
+RobotC::RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal) : Robot(index, pos, map, criminal, C)
+{
     this->name = "RobotC";
 };
 
@@ -1056,12 +1053,10 @@ hay Watson* watson.*/
     return abs(pos.getRow() - character->getCurrentPosition().getRow()) + abs(pos.getCol() - character->getCurrentPosition().getCol());
 };
 
-RobotS::RobotS(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock) : Robot(index, init_pos, map, S)
+RobotS::RobotS(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock) : Robot(index, init_pos, map, criminal, S)
 {
     this->sherlock = Sherlock;
-    this->criminal = criminal;
     this->name = "RobotS";
-    countRobots++;
 };
 
 int RobotS::getDistance() const
@@ -1112,12 +1107,10 @@ string RobotS::str() const
     return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
 }
 
-RobotW::RobotW(int index, const Position &init_pos, Map *map, Criminal *criminal, Watson *watson) : Robot(index, init_pos, map, W)
+RobotW::RobotW(int index, const Position &init_pos, Map *map, Criminal *criminal, Watson *watson) : Robot(index, init_pos, map, criminal, W)
 {
     this->watson = watson;
-    this->criminal = criminal;
     this->name = "RobotW";
-    countRobots++;
 };
 
 Position RobotW::getNextPosition()
@@ -1166,13 +1159,11 @@ string RobotW::str() const
     return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
 }
 
-RobotSW::RobotSW(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock, Watson *watson) : Robot(index, init_pos, map, SW)
+RobotSW::RobotSW(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock, Watson *watson) : Robot(index, init_pos, map, criminal, SW)
 {
     this->sherlock = Sherlock;
     this->watson = watson;
-    this->criminal = criminal;
     this->name = "RobotSW";
-    countRobots++;
 };
 
 Position RobotSW::getNextPosition()
@@ -1512,10 +1503,29 @@ void StudyInPinkProgram::run(bool verbose)
         for (int i = 0; i < arr_mv_objs->size(); ++i)
         {
             arr_mv_objs->get(i)->move();
+            int countSteps = 0;
+            Robot *robot;
+            if (arr_mv_objs->get(i)->getName() == "Criminal")
+            {
+                if (countSteps == 3)
+                {
+                    Robot *robot = Robot::create(3 + Robot::countRobots, map, criminal, sherlock, watson);
+                    countSteps = 0;
+                }
+                arr_mv_objs->get(i)->move();
+                countSteps++;
+            }
             if (arr_mv_objs->get(i)->getName() == "Sherlock")
             {
                 sherlock->meetWatson(watson);
                 sherlock->meetRobot(robot);
+                sherlock->meetRobotC(robot, criminal);
+            }
+            if (arr_mv_objs->get(i)->getName() == "Watson")
+            {
+                watson->meetSherlock(sherlock);
+                watson->meetRobot(robot);
+                watson->meetRobotC(robot, criminal);
             }
             {
             }
