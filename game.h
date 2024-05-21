@@ -302,7 +302,7 @@ public:
 class BaseItem
 {
 public:
-    BaseItem();
+    BaseItem(){};
     virtual bool canUse(Character *obj, Robot *robot) = 0;
     virtual void use(Character *obj, Robot *robot) = 0;
     virtual ItemType getItemType() const = 0;

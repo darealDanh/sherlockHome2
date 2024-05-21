@@ -263,9 +263,9 @@ bool Sherlock::meetRobotC(Robot *robot, Criminal *criminal)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
-        if (this->bag->get(ItemType::PASSING_CARD) != nullptr)
+        if (bag->get(PASSING_CARD) != nullptr)
         {
-            BaseItem *item = this->bag->get(ItemType::PASSING_CARD);
+            BaseItem *item = this->bag->get(PASSING_CARD);
             item->use(this, robot);
         }
         else
@@ -280,21 +280,21 @@ bool Sherlock::meetRobotC(Robot *robot, Criminal *criminal)
                 this->bag->insert(item);
             }
         }
-        ItemType item = ItemType::MAGIC_BOOK;
+        ItemType item = MAGIC_BOOK;
         BaseItem *magicbook = this->bag->get(item);
         while (magicbook != nullptr)
         {
             magicbook->use(this, robot);
             magicbook = this->bag->get(item);
         }
-        item = ItemType::FIRST_AID;
+        item = FIRST_AID;
         BaseItem *firstaid = this->bag->get(item);
         while (firstaid != nullptr)
         {
             firstaid->use(this, robot);
             firstaid = this->bag->get(item);
         }
-        item = ItemType::ENERGY_DRINK;
+        item = ENERGY_DRINK;
         BaseItem *energydrink = this->bag->get(item);
         while (energydrink != nullptr)
         {
@@ -340,21 +340,21 @@ bool Sherlock::meetRobot(Robot *robot)
                 this->setHP(this->getHP() * 0.85);
             }
         }
-        ItemType item = ItemType::MAGIC_BOOK;
+        ItemType item = MAGIC_BOOK;
         BaseItem *magicbook = this->bag->get(item);
         while (magicbook != nullptr)
         {
             magicbook->use(this, robot);
             magicbook = this->bag->get(item);
         }
-        item = ItemType::FIRST_AID;
+        item = FIRST_AID;
         BaseItem *firstaid = this->bag->get(item);
         while (firstaid != nullptr)
         {
             firstaid->use(this, robot);
             firstaid = this->bag->get(item);
         }
-        item = ItemType::ENERGY_DRINK;
+        item = ENERGY_DRINK;
         BaseItem *energydrink = this->bag->get(item);
         while (energydrink != nullptr)
         {
@@ -370,7 +370,7 @@ bool Sherlock::meetWatson(Watson *watson)
     // check if there are any passing card in sherlockBag;
     if (pos.isEqual(watson->getCurrentPosition()))
     {
-        ItemType item = ItemType::PASSING_CARD;
+        ItemType item = PASSING_CARD;
         BaseItem *pcard = this->bag->get(item);
         if (pcard == nullptr || watson->getBag() == nullptr)
         {
@@ -390,13 +390,8 @@ bool Sherlock::meetWatson(Watson *watson)
     return false;
 }
 
-bool Sherlock::meetCriminal(Criminal *criminal)
-{
-}
-
 Watson::Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp) : Character(index, init_pos, map, "Watson")
 {
-    // finish the constructor
     this->moving_rule = moving_rule;
     this->hp = init_hp;
     this->exp = init_exp;
@@ -414,7 +409,7 @@ bool Watson::meetSherlock(Sherlock *sherlock)
     // check if there are any exemcemption card in watsonBag;
     if (pos.isEqual(sherlock->getCurrentPosition()))
     {
-        ItemType item = ItemType::EXCEMPTION_CARD;
+        ItemType item = EXCEMPTION_CARD;
         BaseItem *ecard = this->bag->get(item);
         while (ecard != nullptr)
         {
@@ -433,21 +428,21 @@ bool Watson::meetRobotC(Robot *robot, Criminal *criminal)
         BaseItem *itemGet = robot->getItem();
         this->bag->insert(itemGet);
         robot = nullptr;
-        ItemType item = ItemType::MAGIC_BOOK;
+        ItemType item = MAGIC_BOOK;
         BaseItem *magicbook = this->bag->get(item);
         while (magicbook != nullptr)
         {
             magicbook->use(this, robot);
             magicbook = this->bag->get(item);
         }
-        item = ItemType::FIRST_AID;
+        item = FIRST_AID;
         BaseItem *firstaid = this->bag->get(item);
         while (firstaid != nullptr)
         {
             firstaid->use(this, robot);
             firstaid = this->bag->get(item);
         }
-        item = ItemType::ENERGY_DRINK;
+        item = ENERGY_DRINK;
         BaseItem *energydrink = this->bag->get(item);
         while (energydrink != nullptr)
         {
@@ -463,9 +458,9 @@ bool Watson::meetRobot(Robot *robot)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
-        if (this->bag->get(ItemType::EXCEMPTION_CARD) != nullptr)
+        if (this->bag->get(EXCEMPTION_CARD) != nullptr)
         {
-            BaseItem *item = this->bag->get(ItemType::EXCEMPTION_CARD);
+            BaseItem *item = this->bag->get(EXCEMPTION_CARD);
             item->use(this, robot);
             robot = nullptr;
             return true;
@@ -500,21 +495,21 @@ bool Watson::meetRobot(Robot *robot)
                 }
             }
         }
-        ItemType item = ItemType::MAGIC_BOOK;
+        ItemType item = MAGIC_BOOK;
         BaseItem *magicbook = this->bag->get(item);
         while (magicbook != nullptr)
         {
             magicbook->use(this, robot);
             magicbook = this->bag->get(item);
         }
-        item = ItemType::FIRST_AID;
+        item = FIRST_AID;
         BaseItem *firstaid = this->bag->get(item);
         while (firstaid != nullptr)
         {
             firstaid->use(this, robot);
             firstaid = this->bag->get(item);
         }
-        item = ItemType::ENERGY_DRINK;
+        item = ENERGY_DRINK;
         BaseItem *energydrink = this->bag->get(item);
         while (energydrink != nullptr)
         {
@@ -524,10 +519,6 @@ bool Watson::meetRobot(Robot *robot)
         return true;
     }
     return false;
-}
-
-bool Watson::meetCriminal(Criminal *criminal)
-{
 }
 
 void Watson::move()
@@ -1438,12 +1429,12 @@ string BaseBag::str() const
     return res + "]";
 };
 
-SherlockBag::SherlockBag(Sherlock *sherlock) : BaseBag(capacity)
+SherlockBag::SherlockBag(Sherlock *sherlock) : BaseBag(13)
 {
     this->character = sherlock;
 }
 
-WatsonBag::WatsonBag(Watson *watson) : BaseBag(capacity)
+WatsonBag::WatsonBag(Watson *watson) : BaseBag(15)
 {
     this->character = watson;
 }
