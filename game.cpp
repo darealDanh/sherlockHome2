@@ -365,7 +365,6 @@ bool Sherlock::meetRobot(Robot *robot)
     }
     return false;
 }
-
 bool Sherlock::meetWatson(Watson *watson)
 {
     // check if there are any passing card in sherlockBag;
@@ -373,10 +372,18 @@ bool Sherlock::meetWatson(Watson *watson)
     {
         ItemType item = ItemType::PASSING_CARD;
         BaseItem *pcard = this->bag->get(item);
+        if (pcard == nullptr || watson->getBag() == nullptr)
+        {
+            return false;
+        }
         while (pcard != nullptr)
         {
             watson->getBag()->insert(pcard);
             pcard = this->bag->get(item);
+            if (pcard == nullptr || watson->getBag() == nullptr)
+            {
+                break;
+            }
         }
         return true;
     }
@@ -1215,10 +1222,6 @@ ItemType ExemptionCard::getItemType() const
 ItemType PassingCard::getItemType() const
 {
     return PASSING_CARD;
-}
-
-MagicBook::MagicBook()
-{
 }
 
 bool MagicBook::canUse(Character *obj, Robot *robot)
