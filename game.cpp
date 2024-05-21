@@ -1320,6 +1320,7 @@ BaseBag::BaseBag(int capacity)
 {
     this->head = nullptr;
     this->countItem = 0;
+    this->capacity = capacity;
 }
 
 BaseBag::~BaseBag()
@@ -1425,20 +1426,21 @@ string BaseBag::str() const
 {
     /*Bag[count=<c>;<list_items>]*/
     string res = "Bag[count=" + to_string(countItem) + ";";
-    BaseItem *temp = head;
+    Node *temp = head;
     while (temp != nullptr)
     {
-        res += to_string(temp->getItemType()) + ";";
+        res += to_string(temp->item->getItemType()) + ";";
         temp = temp->next;
     }
+    return res + "]";
 };
 
-SherlockBag::SherlockBag(Sherlock *sherlock) : BaseBag(sherlock)
+SherlockBag::SherlockBag(Sherlock *sherlock) : BaseBag(capacity)
 {
     this->character = sherlock;
 }
 
-WatsonBag::WatsonBag(Watson *watson) : BaseBag(watson)
+WatsonBag::WatsonBag(Watson *watson) : BaseBag(capacity)
 {
     this->character = watson;
 }
