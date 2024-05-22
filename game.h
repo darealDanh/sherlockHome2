@@ -137,7 +137,6 @@ protected:
 
 public:
     MovingObject(int index, const Position pos, Map *map, const string &name);
-    virtual ~MovingObject();
     virtual Position getNextPosition() = 0;
     virtual Position getCurrentPosition() const = 0;
     virtual void move() = 0;
@@ -194,6 +193,7 @@ class Character : public MovingObject
 protected:
     string moving_rule;
     BaseBag *bag;
+    int steps;
 
 public:
     Character(int index, const Position &init_pos, Map *map, const string &name);

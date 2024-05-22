@@ -68,12 +68,6 @@ tính cùng tên. Riêng tham số name có giá trị mặc định là "".*/
     this->name = name;
 }
 
-MovingObject::~MovingObject()
-{
-    /*Phương thức hủy giải phóng bộ nhớ đã cấp phát cho thuộc tính map.*/
-    delete map;
-}
-
 Position MovingObject::getCurrentPosition() const
 {
     return pos;
@@ -181,40 +175,45 @@ Position Character::getNextPosition()
     {
         next_pos = Position::npos;
     }
-    int i = 0;
-    while (true)
+    if (steps == moving_rule.length())
     {
-        if (i == moving_rule.length())
-        {
-            i = 0;
-        }
-        if (moving_rule[i] == 'L')
-        {
-            next_pos.setCol(pos.getCol() - 1);
-        }
-        else if (moving_rule[i] == 'R')
-        {
-            next_pos.setCol(pos.getCol() + 1);
-        }
-        else if (moving_rule[i] == 'U')
-        {
-            next_pos.setRow(pos.getRow() - 1);
-        }
-        else if (moving_rule[i] == 'D')
-        {
-            next_pos.setRow(pos.getRow() + 1);
-        }
-        // check if the next position is valid with two parameter: pos and mv_obj
-        if (map->isValid(next_pos, this))
-        {
-            return next_pos;
-        }
-        else
-        {
-            next_pos = Position::npos;
-        }
-        i++;
+        steps = 0;
     }
+    int temp = 0;
+    if (moving_rule[steps] == 'L')
+    {
+        next_pos.setCol(pos.getCol() - 1);
+        temp += 1;
+    }
+    else if (moving_rule[steps] == 'R')
+    {
+        next_pos.setCol(pos.getCol() + 1);
+        temp += 1;
+    }
+    else if (moving_rule[steps] == 'U')
+    {
+        next_pos.setRow(pos.getRow() - 1);
+        temp += 1;
+    }
+    else if (moving_rule[steps] == 'D')
+    {
+        next_pos.setRow(pos.getRow() + 1);
+        temp += 1;
+    }
+    // check if the next position is valid with two parameter: pos and mv_obj
+    if (map->isValid(next_pos, this))
+    {
+        return next_pos;
+    }
+    else
+    {
+        next_pos = pos;
+    }
+    if (temp == 0)
+    {
+        next_pos = Position::npos;
+    }
+    steps++;
     return next_pos;
 }
 
@@ -650,10 +649,14 @@ int ArrayMovingObject::size() const
 string ArrayMovingObject::str() const
 {
     /*ArrayMovingObject [ count =3; capacity =10; Criminal [ index =0; pos =(8 ,9) ]; Sherlock [ index =1; pos (1 ,4) ; moving_rule = RUU ]; Watson [ index =2; pos=(2 ,1) ; moving_rule = LU ]]*/
-    string res = "ArrayMovingObject [ count =" + to_string(count) + "; capacity =" + to_string(capacity) + "; ";
+    string res = "ArrayMovingObject[count =" + to_string(count) + ";capacity =" + to_string(capacity) + ";";
     for (int i = 0; i < count; i++)
     {
-        res += get(i)->str() + "; ";
+        res += get(i)->str();
+        if (i != count - 1)
+        {
+            res += ";";
+        }
     }
     res += "]";
     return res;
