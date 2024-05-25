@@ -1,4 +1,4 @@
-#include "game.h"
+#include "study_in_pink2.h"
 
 MapElement::MapElement(ElementType in_type)
 {
@@ -24,9 +24,9 @@ Wall::Wall() : MapElement(WALL)
     type = WALL;
 }
 
-FakeWall::FakeWall(int r, int c) : MapElement(FAKE_WALL)
+FakeWall::FakeWall(int in_req_exp) : MapElement(FAKE_WALL)
 {
-    req_exp = (r * 257 + c * 139 + 89) % 900 + 1;
+    req_exp = in_req_exp;
 }
 
 int FakeWall::getReqExp() const
@@ -54,7 +54,9 @@ Map::Map(int num_rows, int num_cols, int num_walls, Position *array_walls, int n
 
     for (int i = 0; i < num_fake_walls; i++)
     {
-        map[array_fake_walls[i].getRow()][array_fake_walls[i].getCol()] = new FakeWall(array_fake_walls[i].getRow(), array_fake_walls[i].getCol());
+        // calculate in req_exp (r ∗ 257 + c ∗ 139 + 89)%900 + 1
+        int req_exp = (array_fake_walls[i].getRow() * 257 + array_fake_walls[i].getCol() * 139 + 89) % 900 + 1;
+        map[array_fake_walls[i].getRow()][array_fake_walls[i].getCol()] = new FakeWall(req_exp);
     }
 }
 
@@ -158,6 +160,12 @@ bool Position::isEqual(const Position &pos) const
         return true;
     return false;
 }
+bool Position::isEqual(int r, int c) const
+{
+    if (r == this->r && c == this->c)
+        return true;
+    return false;
+}
 
 Character::Character(int index, const Position &init_pos, Map *map, const string &name) : MovingObject(index, init_pos, map, name)
 {
@@ -185,21 +193,25 @@ Position Character::getNextPosition()
     {
         next_pos.setCol(pos.getCol() - 1);
         temp += 1;
+        steps++;
     }
     else if (moving_rule[steps] == 'R')
     {
         next_pos.setCol(pos.getCol() + 1);
         temp += 1;
+        steps++;
     }
     else if (moving_rule[steps] == 'U')
     {
         next_pos.setRow(pos.getRow() - 1);
         temp += 1;
+        steps++;
     }
     else if (moving_rule[steps] == 'D')
     {
         next_pos.setRow(pos.getRow() + 1);
         temp += 1;
+        steps++;
     }
     // check if the next position is valid with two parameter: pos and mv_obj
     if (map->isValid(next_pos, this))
@@ -214,7 +226,6 @@ Position Character::getNextPosition()
     {
         next_pos = Position::npos;
     }
-    steps++;
     return next_pos;
 }
 
@@ -259,7 +270,7 @@ void Sherlock::move()
     pos = next_pos;
 }
 
-bool Sherlock::meetRobotC(Robot *robot, Criminal *criminal)
+bool Sherlock::meetRobotC(Robot *robot)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
@@ -272,7 +283,7 @@ bool Sherlock::meetRobotC(Robot *robot, Criminal *criminal)
         {
             if (this->getExp() > 500)
             {
-                pos = criminal->getCurrentPosition();
+                pos = robot->getCriminalPos();
             }
             else
             {
@@ -421,7 +432,7 @@ bool Watson::meetSherlock(Sherlock *sherlock)
     return false;
 }
 
-bool Watson::meetRobotC(Robot *robot, Criminal *criminal)
+bool Watson::meetRobotC(Robot *robot)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
@@ -541,12 +552,14 @@ Criminal::Criminal(int index, const Position &init_pos, Map *map, Sherlock *sher
 {
     this->sherlock = sherlock;
     this->watson = watson;
+    this->prev_pos = Position::npos;
 }
 
 Position Criminal::getNextPosition()
 {
     // finish the method
     Position next_pos = pos;
+    prev_pos = pos;
     int max_distance = -1;
     Position arr[4];
     // 4 elements of the arr is the position after moving U,L,D,R respectively, ex: (1,2)
@@ -590,6 +603,11 @@ void Criminal::move()
 Robot *Criminal::getRobot() const
 {
     return robot;
+}
+
+Position Criminal::getPrevPos() const
+{
+    return prev_pos;
 }
 
 ArrayMovingObject::ArrayMovingObject(int capacity)
@@ -650,7 +668,7 @@ int ArrayMovingObject::size() const
 string ArrayMovingObject::str() const
 {
     /*ArrayMovingObject [ count =3; capacity =10; Criminal [ index =0; pos =(8 ,9) ]; Sherlock [ index =1; pos (1 ,4) ; moving_rule = RUU ]; Watson [ index =2; pos=(2 ,1) ; moving_rule = LU ]]*/
-    string res = "ArrayMovingObject[count =" + to_string(count) + ";capacity =" + to_string(capacity) + ";";
+    string res = "ArrayMovingObject[count=" + to_string(count) + ";capacity=" + to_string(capacity) + ";";
     for (int i = 0; i < count; i++)
     {
         res += get(i)->str();
@@ -663,169 +681,115 @@ string ArrayMovingObject::str() const
     return res;
 }
 
-void extractNum(const string &input, int &value)
-{
-    string temp = input;
-    size_t pos = temp.find("=");
-    temp = temp.substr(pos + 1);
-    sscanf(temp.c_str(), "%d", &value);
-}
-
-void extractCoor(const string &input, string &value)
-{
-    string temp = input;
-    size_t pos = temp.find("=");
-    temp = temp.substr(pos + 1);
-    value = temp;
-}
-
 Configuration::Configuration(const string &filepath)
 {
-    // finish the constructor
-    int s = 0;
-    int &value = s;
-    int r, c;
     ifstream ifs(filepath);
     if (!ifs.is_open())
     {
-        return;
+        exit(1);
     }
-    string arr[12];
-    for (int i = 0; i < 12; i++)
+    string s;
+    // MAP_NUM_ROWS=10
+    for (int i = 0; i < 15 && !ifs.eof(); i++)
     {
-        ifs >> arr[i];
-    }
-    for (int i = 0; i < 12; i++)
-    {
-        string s2;
-        if (arr[i].find("MAP_NUM_ROWS"))
+        getline(ifs, s);
+        string temp;
+        if (s.find("MAP_NUM_ROWS") == 0)
         {
-            extractNum(arr[i], value);
-            map_num_rows = value;
+            map_num_rows = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("MAP_NUM_COLS"))
+        else if (s.find("MAP_NUM_COLS") == 0)
         {
-            extractNum(arr[i], value);
-            map_num_cols = value;
+            map_num_cols = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("MAX_NUM_MOVING_OBJECTS"))
+        else if (s.find("MAX_NUM_MOVING_OBJECTS") == 0)
         {
-            extractNum(arr[i], value);
-            max_num_moving_objects = value;
+            max_num_moving_objects = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("NUM_WALLS"))
+        else if (s.find("NUM_WALLS") == 0)
         {
-            extractNum(arr[i], value);
-            num_walls = value;
+            num_walls = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("ARRAY_WALLS"))
+        else if (s.find("NUM_FAKE_WALLS") == 0)
         {
-            string line;
+            num_fake_walls = stoi(s.substr(s.find('=') + 1));
+        }
+        else if (s.find("ARRAY_WALLS") == 0)
+        {
+            num_walls = (s.length() - 13) / 6;
 
-            while (getline(ifs, line))
+            if (num_walls > 0)
             {
-                // remove ARRAY_WALLS first
-                size_t pos = line.find("[");
-                line = line.substr(pos);
-                line = line.substr(1, line.size() - 2); // Remove brackets
-
-                stringstream ss(line);
-                string pair;
-                int i = 0;
-                while (getline(ss, pair, ';'))
+                arr_walls = new Position[num_walls];
+                string start = s.substr(s.find('[') + 1, s.find(']') - s.find('[') - 1);
+                for (int i = 0; i < num_walls; i++)
                 {
-                    // Process the pair string immediately
+                    string pair = start.substr(i * 6, 5);
                     arr_walls[i] = Position(pair);
                 }
             }
         }
-        else if (arr[i].find("NUM_FAKE_WALLS"))
+        else if (s.find("ARRAY_FAKE_WALLS") == 0)
         {
-            extractNum(arr[i], value);
-            num_fake_walls = value;
-        }
-        else if (arr[i].find("ARRAY_FAKE_WALLS"))
-        {
-            string line;
+            num_fake_walls = (s.length() - 18) / 6;
 
-            while (getline(ifs, line))
+            if (num_fake_walls > 0)
             {
-                // remove ARRAY_WALLS first
-                size_t pos = line.find("[");
-                line = line.substr(pos);
-                line = line.substr(1, line.size() - 2); // Remove brackets
-
-                stringstream ss(line);
-                string pair;
-                int i = 0;
-                while (getline(ss, pair, ';'))
+                arr_fake_walls = new Position[num_fake_walls];
+                string start = s.substr(s.find('[') + 1, s.find(']') - s.find('[') - 1);
+                for (int i = 0; i < num_fake_walls; i++)
                 {
-                    // Process the pair string immediately
+                    string pair = start.substr(i * 6, 5);
                     arr_fake_walls[i] = Position(pair);
                 }
             }
         }
-        else if (arr[i].find("SHERLOCK_INIT_HP"))
+        else if (s.find("SHERLOCK_MOVING_RULE") == 0)
         {
-            extractNum(arr[i], value);
-            sherlock_init_hp = value;
+            sherlock_moving_rule = s.substr(s.find('=') + 1);
         }
-        else if (arr[i].find("SHERLOCK_INIT_EXP"))
+        else if (s.find("SHERLOCK_INIT_POS") == 0)
         {
-            extractNum(arr[i], value);
-            sherlock_init_exp = value;
+            sherlock_init_pos = Position(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("WATSON_INIT_HP"))
+        else if (s.find("SHERLOCK_INIT_HP") == 0)
         {
-            extractNum(arr[i], value);
-            watson_init_hp = value;
+            sherlock_init_hp = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("WATSON_INIT_EXP"))
+        else if (s.find("SHERLOCK_INIT_EXP") == 0)
         {
-            extractNum(arr[i], value);
-            watson_init_exp = value;
+            sherlock_init_exp = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("SHERLOCK_INIT_POS"))
+        else if (s.find("WATSON_MOVING_RULE") == 0)
         {
-            extractCoor(arr[i], s2);
-            sherlock_init_pos = new Position(s2);
+            watson_moving_rule = s.substr(s.find('=') + 1);
         }
-        else if (arr[i].find("WATSON_INIT_POS"))
+        else if (s.find("WATSON_INIT_POS") == 0)
         {
-            extractCoor(arr[i], s2);
-            watson_init_pos = new Position(s2);
+            watson_init_pos = Position(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("CRIMINAL_INIT_POS"))
+        else if (s.find("WATSON_INIT_HP") == 0)
         {
-            extractCoor(arr[i], s2);
-            criminal_init_pos = new Position(s2);
+            watson_init_hp = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("SHERLOCK_MOVING_RULE"))
+        else if (s.find("WATSON_INIT_EXP") == 0)
         {
-            extractCoor(arr[i], s2);
-            sherlock_moving_rule = s2;
+            watson_init_exp = stoi(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("WATSON_MOVING_RULE"))
+        else if (s.find("CRIMINAL_INIT_POS") == 0)
         {
-            extractCoor(arr[i], s2);
-            watson_moving_rule = s2;
+            criminal_init_pos = Position(s.substr(s.find('=') + 1));
         }
-        else if (arr[i].find("NUM_STEPS"))
+        else if (s.find("NUM_STEPS") == 0)
         {
-            extractNum(arr[i], value);
-            num_steps = value;
+            num_steps = stoi(s.substr(s.find('=') + 1));
         }
     }
-    ifs.close();
 }
-
 Configuration::~Configuration()
 {
     delete[] arr_walls;
     delete[] arr_fake_walls;
-    delete sherlock_init_pos;
-    delete watson_init_pos;
-    delete criminal_init_pos;
 }
 
 string Configuration::str() const
@@ -856,25 +820,33 @@ string Configuration::str() const
     res += "ARRAY_WALLS=[";
     for (int i = 0; i < num_walls; i++)
     {
-        res += arr_walls[i].str() + ";";
+        res += arr_walls[i].str();
+        if (i != num_walls - 1)
+        {
+            res += ";";
+        }
     }
     res += "]\n";
     res += "NUM_FAKE_WALLS=" + to_string(num_fake_walls) + "\n";
     res += "ARRAY_FAKE_WALLS=[";
     for (int i = 0; i < num_fake_walls; i++)
     {
-        res += arr_fake_walls[i].str() + ";";
+        res += arr_fake_walls[i].str();
+        if (i != num_fake_walls - 1)
+        {
+            res += ";";
+        }
     }
     res += "]\n";
     res += "SHERLOCK_MOVING_RULE=" + sherlock_moving_rule + "\n";
-    res += "SHERLOCK_INIT_POS=" + sherlock_init_pos->str() + "\n";
+    res += "SHERLOCK_INIT_POS=" + sherlock_init_pos.str() + "\n";
     res += "SHERLOCK_INIT_HP=" + to_string(sherlock_init_hp) + "\n";
     res += "SHERLOCK_INIT_EXP=" + to_string(sherlock_init_exp) + "\n";
     res += "WATSON_MOVING_RULE=" + watson_moving_rule + "\n";
-    res += "WATSON_INIT_POS=" + watson_init_pos->str() + "\n";
+    res += "WATSON_INIT_POS=" + watson_init_pos.str() + "\n";
     res += "WATSON_INIT_HP=" + to_string(watson_init_hp) + "\n";
     res += "WATSON_INIT_EXP=" + to_string(watson_init_exp) + "\n";
-    res += "CRIMINAL_INIT_POS=" + criminal_init_pos->str() + "\n";
+    res += "CRIMINAL_INIT_POS=" + criminal_init_pos.str() + "\n";
     res += "NUM_STEPS=" + to_string(num_steps) + "\n";
     res += "]";
     return res;
@@ -920,7 +892,7 @@ các chữ số, cho đến khi giá trị tổng đó là số có 1 chữ số
     }
     else if (s >= 6 && s <= 7)
     {
-        *item = ExemptionCard();
+        *item = ExcemptionCard();
     }
     else if (s >= 8 && s <= 9)
     {
@@ -994,8 +966,12 @@ Robot *Robot::create(int index, Map *map, Criminal *criminal, Sherlock *sherlock
     }
     return robot;
 }
+Position Robot::getCriminalPos() const
+{
+    return criminal->getCurrentPosition();
+}
 
-RobotC::RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal) : Robot(index, pos, map, criminal, C)
+RobotC::RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal) : Robot(index, init_pos, map, criminal, C)
 {
     this->name = "RobotC";
 };
@@ -1003,7 +979,7 @@ RobotC::RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal
 Position RobotC::getNextPosition()
 {
     // go to next_pos with criminal
-    Position next_pos = criminal->getCurrentPosition();
+    Position next_pos = criminal->getPrevPos();
     if (&next_pos == &pos)
     {
         next_pos = Position::npos;
@@ -1014,7 +990,7 @@ Position RobotC::getNextPosition()
 string RobotC::str() const
 {
     // Robot[pos=<pos>;type=<robot_type>;dist=<empty>]
-    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=]";
+    return "Robot[pos=" + pos.str() + ";type=C" + ";dist=]";
 }
 
 int RobotC::getDistance(Character *character) const
@@ -1076,7 +1052,7 @@ lựa chọn vị trí đầu tiên*/
 string RobotS::str() const
 {
     // Robot[pos=<pos>;type=<robot_type>;dist=<dist>]
-    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
+    return "Robot[pos=" + pos.str() + ";type=S" + ";dist=" + to_string(getDistance()) + "]";
 }
 
 RobotW::RobotW(int index, const Position &init_pos, Map *map, Criminal *criminal, Watson *watson) : Robot(index, init_pos, map, criminal, W)
@@ -1128,7 +1104,7 @@ int RobotW::getDistance() const
 string RobotW::str() const
 {
     // Robot[pos=<pos>;type=<robot_type>;dist=<dist>]
-    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
+    return "Robot[pos=" + pos.str() + ";type=W" + ";dist=" + to_string(getDistance()) + "]";
 }
 
 RobotSW::RobotSW(int index, const Position &init_pos, Map *map, Criminal *criminal, Sherlock *Sherlock, Watson *watson) : Robot(index, init_pos, map, criminal, SW)
@@ -1181,7 +1157,7 @@ int RobotSW::getDistance() const
 string RobotSW::str() const
 {
     // Robot[pos=<pos>;type=<robot_type>;dist=<dist>]
-    return "Robot[pos=" + pos.str() + ";type=" + to_string(robot_type) + ";dist=" + to_string(getDistance()) + "]";
+    return "Robot[pos=" + pos.str() + ";type=SW" + ";dist=" + to_string(getDistance()) + "]";
 }
 
 bool BaseItem::canUse(Character *obj, Robot *robot)
@@ -1209,7 +1185,7 @@ ItemType FirstAid::getItemType() const
     return FIRST_AID;
 }
 
-ItemType ExemptionCard::getItemType() const
+ItemType ExcemptionCard::getItemType() const
 {
     return EXCEMPTION_CARD;
 }
@@ -1270,7 +1246,7 @@ void FirstAid::use(Character *obj, Robot *robot)
     }
 }
 
-bool ExemptionCard::canUse(Character *obj, Robot *robot)
+bool ExcemptionCard::canUse(Character *obj, Robot *robot)
 {
     if (obj->getName() == "Sherlock" && obj->getHP() % 2 != 0)
     {
@@ -1279,7 +1255,7 @@ bool ExemptionCard::canUse(Character *obj, Robot *robot)
     return false;
 }
 
-void ExemptionCard::use(Character *obj, Robot *robot)
+void ExcemptionCard::use(Character *obj, Robot *robot)
 {
     obj->setExp(obj->getExp());
     obj->setHP(obj->getHP());
@@ -1287,7 +1263,7 @@ void ExemptionCard::use(Character *obj, Robot *robot)
 
 PassingCard::PassingCard(const string &challenges)
 {
-    this->challenges = challenges;
+    this->challenge = challenges;
 }
 
 bool PassingCard::canUse(Character *obj, Robot *robot)
@@ -1301,7 +1277,7 @@ bool PassingCard::canUse(Character *obj, Robot *robot)
 
 void PassingCard::use(Character *obj, Robot *robot)
 {
-    if (challenges == robot->getName())
+    if (challenge == robot->getName())
     {
         BaseItem *item = robot->getItem();
         obj->getBag()->insert(item);
@@ -1427,7 +1403,11 @@ string BaseBag::str() const
     Node *temp = head;
     while (temp != nullptr)
     {
-        res += to_string(temp->item->getItemType()) + ";";
+        res += to_string(temp->item->getItemType());
+        if (temp->next != nullptr)
+        {
+            res += ";";
+        }
         temp = temp->next;
     }
     return res + "]";
@@ -1443,7 +1423,7 @@ WatsonBag::WatsonBag(Watson *watson) : BaseBag(15)
     this->character = watson;
 }
 
-StudyInPinkProgram::StudyInPinkProgram(const string &filepath)
+StudyPinkProgram::StudyPinkProgram(const string &filepath)
 {
     ifstream ifs(filepath);
     if (!ifs.is_open())
@@ -1454,7 +1434,7 @@ StudyInPinkProgram::StudyInPinkProgram(const string &filepath)
     ifs.close();
 }
 
-bool StudyInPinkProgram::isStop() const
+bool StudyPinkProgram::isStop() const
 {
     if (sherlock->getHP() == 0 || watson->getHP() == 0 || criminal->getCurrentPosition().isEqual(sherlock->getCurrentPosition()) || criminal->getCurrentPosition().isEqual(watson->getCurrentPosition()))
     {
@@ -1463,7 +1443,7 @@ bool StudyInPinkProgram::isStop() const
     return false;
 }
 
-void StudyInPinkProgram::run(bool verbose)
+void StudyPinkProgram::run(bool verbose)
 {
     // Note: This is a sample code. You can change the implementation as you like.
     // TODO
@@ -1476,10 +1456,9 @@ void StudyInPinkProgram::run(bool verbose)
             Robot *robot;
             if (arr_mv_objs->get(i)->getName() == "Criminal")
             {
-                if (countSteps == 3)
+                if (countSteps % 3 == 0)
                 {
                     Robot *robot = Robot::create(3 + Robot::countRobots, map, criminal, sherlock, watson);
-                    countSteps = 0;
                 }
                 arr_mv_objs->get(i)->move();
                 countSteps++;
@@ -1488,13 +1467,13 @@ void StudyInPinkProgram::run(bool verbose)
             {
                 sherlock->meetWatson(watson);
                 sherlock->meetRobot(robot);
-                sherlock->meetRobotC(robot, criminal);
+                sherlock->meetRobotC(robot);
             }
             if (arr_mv_objs->get(i)->getName() == "Watson")
             {
                 watson->meetSherlock(sherlock);
                 watson->meetRobot(robot);
-                watson->meetRobotC(robot, criminal);
+                watson->meetRobotC(robot);
             }
             if (isStop())
             {
@@ -1555,3 +1534,168 @@ void StudyInPinkProgram::run(bool verbose)
 //     delete map;
 //     return 0;
 // }
+
+// int main()
+// {
+//     // cout << "----- Testcase 343 -----" << endl;
+//     // int num_walls = 4;
+//     // Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4), Position(4, 5)};
+//     // int num_fake_walls = 2;
+//     // Position arr_fake_walls[] = {Position(2, 0), Position(4, 0)};
+
+//     // Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
+
+//     // Watson *watson = new Watson(1, "RUU", Position(1, 3), map, 70, 450);
+
+//     // BaseItem *excemptionCard = new ExcemptionCard();
+//     // BaseItem *firstAid = new FirstAid();
+
+//     // BaseBag *watsonBag = new WatsonBag(watson);
+
+//     // watsonBag->insert(excemptionCard);
+//     // watsonBag->insert(firstAid);
+
+//     // // watsonBag->get();
+
+//     // cout << watsonBag->getCount() << endl;
+
+//     // delete map;
+//     // delete watson;
+//     // delete excemptionCard;
+//     // delete firstAid;
+//     // delete watsonBag;
+//     cout << "----- Testcase 350 -----" << endl;
+//     int num_walls = 4;
+//     Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4), Position(4, 5)};
+//     int num_fake_walls = 2;
+//     Position arr_fake_walls[] = {Position(2, 0), Position(4, 0)};
+
+//     Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
+
+//     Sherlock *sherlock = new Sherlock(1, "RUU", Position(1, 3), map, 251, 390);
+
+//     Watson *watson = new Watson(2, "LU", Position(2, 1), map, 320, 350);
+
+//     Criminal *criminal = new Criminal(0, Position(7, 9), map, sherlock, watson);
+
+//     RobotC *robotC = new RobotC(3, Position(7, 9), map, criminal);
+
+//     RobotS *robotS = new RobotS(4, Position(1, 4), map, criminal, sherlock);
+
+//     sherlock->move();
+//     cout << sherlock->getSteps() << endl;
+//     sherlock->move();
+//     cout << sherlock->getSteps() << endl;
+//     sherlock->move();
+//     cout << sherlock->getSteps();
+//     cout << sherlock->str() << endl;
+//     sherlock->move();
+//     sherlock->move();
+//     sherlock->move();
+//     sherlock->move();
+//     cout << sherlock->str() << endl;
+//     criminal->move();
+//     criminal->move();
+//     criminal->move();
+//     criminal->move();
+//     criminal->move();
+//     criminal->move();
+//     criminal->move();
+//     criminal->move();
+
+//     cout << sherlock->str() << endl;
+//     cout << criminal->str() << endl;
+
+//     delete map;
+//     delete sherlock;
+//     delete watson;
+//     delete criminal;
+//     delete robotC;
+//     delete robotS;
+// }
+
+/*----- Sample Testcase 01 -----
+Sherlock[index=1;pos=(1,3);moving_rule=RUU]
+Watson[index=2;pos=(2,1);moving_rule=LU]
+Criminal[index=0;pos=(7,9)]
+* Sherlock makes a move
+Sherlock[index=1;pos=(1,4);moving_rule=RUU]
+* Watson makes a move
+Watson[index=2;pos=(2,1);moving_rule=LU]
+* Criminal makes a move
+Criminal[index=0;pos=(8,9)]
+ArrayMovingObject[count =3;capacity =10;Criminal[index=0;pos=(8,9)];Sherlock[index=1;pos=(1,4);moving_rule=RUU];Watson[index=2;pos=(2,1);moving_rule=LU]]
+TestStudyInPink::satc_02();
+//FILE CONFIG CONTENT:
+MAP_NUM_ROWS=10
+MAP_NUM_COLS=10
+MAX_NUM_MOVING_OBJECTS=10
+ARRAY_WALLS=[(1,2);(2,3);(3,4)]
+ARRAY_FAKE_WALLS=[(4,5)]
+SHERLOCK_MOVING_RULE=RUU
+SHERLOCK_INIT_POS=(1,3)
+SHERLOCK_INIT_HP=250
+SHERLOCK_INIT_EXP=500
+WATSON_MOVING_RULE=LU
+WATSON_INIT_POS=(2,1)
+WATSON_INIT_HP=300
+WATSON_INIT_EXP=350
+CRIMINAL_INIT_POS=(7,9)
+NUM_STEPS=100
+----- Sample Testcase 02 -----
+Configuration[
+MAP_NUM_ROWS=10
+MAP_NUM_COLS=10
+MAX_NUM_MOVING_OBJECTS=10
+NUM_WALLS=3
+ARRAY_WALLS=[(1,2);(2,3);(3,4)]
+NUM_FAKE_WALLS=1
+ARRAY_FAKE_WALLS=[(4,5)]
+SHERLOCK_MOVING_RULE=RUU
+SHERLOCK_INIT_POS=(1,3)
+SHERLOCK_INIT_HP=250
+SHERLOCK_INIT_EXP=500
+WATSON_MOVING_RULE=LU
+WATSON_INIT_POS=(2,1)
+WATSON_INIT_HP=300
+WATSON_INIT_EXP=350
+CRIMINAL_INIT_POS=(7,9)
+NUM_STEPS=100
+]
+----- Sample Testcase 02 -----
+
+***Run error***
+Segmentation fault (core dumped)
+*/
+int main()
+{
+    // create a test case for Configuration
+    cout << "----- Testcase 320 -----" << endl;
+    int num_walls = 4;
+    Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4), Position(4, 5)};
+    int num_fake_walls = 2;
+    Position arr_fake_walls[] = {Position(2, 0), Position(4, 0)};
+
+    Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
+
+    Sherlock *sherlock = new Sherlock(1, "RUU", Position(1, 3), map, 150, 450);
+
+    BaseItem *passingCard1 = new PassingCard("RobotS");
+    BaseItem *passingCard2 = new PassingCard("RobotC");
+
+    BaseBag *sherlockBag = new SherlockBag(sherlock);
+
+    sherlockBag->insert(passingCard1);
+    sherlockBag->insert(passingCard2);
+
+    sherlockBag->get(PASSING_CARD);
+
+    cout << sherlockBag->getCount() << endl;
+    cout << sherlockBag->str() << endl;
+
+    delete map;
+    delete sherlock;
+    delete passingCard1;
+    delete passingCard2;
+    delete sherlockBag;
+}
