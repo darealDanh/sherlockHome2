@@ -4,6 +4,25 @@
     "*.tcc": "cpp",
     "istream": "cpp",
     "tuple": "cpp",
-    "utility": "cpp"
+    "utility": "cpp",
+    "functional": "cpp",
+    "memory": "cpp",
+    "fstream": "cpp",
+    "iomanip": "cpp",
+    "limits": "cpp",
+    "ostream": "cpp",
+    "numeric": "cpp",
+    "streambuf": "cpp",
+    "atomic": "cpp",
+    "deque": "cpp",
+    "string": "cpp",
+    "vector": "cpp",
+    "algorithm": "cpp",
+    "memory_resource": "cpp",
+    "random": "cpp",
+    "initializer_list": "cpp",
+    "sstream": "cpp",
+    "stdexcept": "cpp",
+    "type_traits": "cpp"
   }
 }

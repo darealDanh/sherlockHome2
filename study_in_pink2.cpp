@@ -716,7 +716,15 @@ Configuration::Configuration(const string &filepath)
         }
         else if (s.find("ARRAY_WALLS") == 0)
         {
-            num_walls = (s.length() - 13) / 6;
+            int numWall = 0;
+            for (int i = 0; i < s.length(); i++)
+            {
+                if (s[i] == ';')
+                {
+                    numWall++;
+                }
+            }
+            num_walls = ++numWall;
 
             if (num_walls > 0)
             {
@@ -724,8 +732,9 @@ Configuration::Configuration(const string &filepath)
                 string start = s.substr(s.find('[') + 1, s.find(']') - s.find('[') - 1);
                 for (int i = 0; i < num_walls; i++)
                 {
-                    string pair = start.substr(i * 6, 5);
+                    string pair = start.substr(start.find('('), start.find(')') - start.find('(') + 1);
                     arr_walls[i] = Position(pair);
+                    start = start.substr(start.find(')') + 1);
                 }
             }
         }
@@ -739,8 +748,9 @@ Configuration::Configuration(const string &filepath)
                 string start = s.substr(s.find('[') + 1, s.find(']') - s.find('[') - 1);
                 for (int i = 0; i < num_fake_walls; i++)
                 {
-                    string pair = start.substr(i * 6, 5);
+                    string pair = start.substr(start.find('('), start.find(')') - start.find('(') + 1);
                     arr_fake_walls[i] = Position(pair);
+                    start = start.substr(start.find(')') + 1);
                 }
             }
         }
@@ -790,28 +800,12 @@ Configuration::~Configuration()
 {
     delete[] arr_walls;
     delete[] arr_fake_walls;
+    arr_walls = nullptr;
+    arr_fake_walls = nullptr;
 }
 
 string Configuration::str() const
 {
-    /*Configuration[
-    MAP_NUM_ROWS=10
-    MAP_NUM_COLS=10
-    MAX_NUM_MOVING_OBJECTS=10
-    NUM_WALLS=3
-    ARRAY_WALLS=[(1,2);(2,3);(3,4)]
-    NUM_FAKE_WALLS=1
-    ARRAY_FAKE_WALLS=[(4,5)]
-    SHERLOCK_MOVING_RULE=RUU
-    SHERLOCK_INIT_POS=(1,3)
-    SHERLOCK_INIT_HP=250
-    SHERLOCK_INIT_EXP=500
-    WATSON_MOVING_RULE=LU
-    WATSON_INIT_POS=(2,1)
-    WATSON_INIT_HP=300
-    WATSON_INIT_EXP=350
-    CRIMINAL_INIT_POS=(7,9)
-    NUM_STEPS=100]*/
     string res = "Configuration[\n";
     res += "MAP_NUM_ROWS=" + to_string(map_num_rows) + "\n";
     res += "MAP_NUM_COLS=" + to_string(map_num_cols) + "\n";
@@ -1489,213 +1483,11 @@ void StudyPinkProgram::run(bool verbose)
     printResult();
 }
 
-// int main()
-// {
-//     // create an example test case for sherlock watson, a map, a criminal and a robot
-//     cout << "----- Sample Testcase 01 -----" << endl;
-//     int num_walls = 3;
-//     Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4)};
-//     int num_fake_walls = 1;
-//     Position arr_fake_walls[] = {Position(2, 0)};
-
-//     Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
-
-//     Sherlock *sherlock = new Sherlock(1, "RUU", Position(1, 3), map, 250, 450);
-//     cout << sherlock->str() << endl;
-
-//     Watson *watson = new Watson(2, "LU", Position(2, 1), map, 300, 350);
-//     cout << watson->str() << endl;
-
-//     Criminal *criminal = new Criminal(0, Position(7, 9), map, sherlock, watson);
-//     cout << criminal->str() << endl;
-
-//     cout << "* Sherlock makes a move" << endl;
-//     sherlock->move();
-//     cout << sherlock->str() << endl;
-
-//     cout << "* Watson makes a move" << endl;
-//     watson->move();
-//     cout << watson->str() << endl;
-
-//     cout << "* Criminal makes a move" << endl;
-//     criminal->move();
-//     cout << criminal->str() << endl;
-
-//     ArrayMovingObject *arr_mv_objs = new ArrayMovingObject(10);
-//     arr_mv_objs->add(criminal);
-//     arr_mv_objs->add(sherlock);
-//     arr_mv_objs->add(watson);
-//     cout << arr_mv_objs->str() << endl;
-
-//     delete arr_mv_objs;
-//     delete sherlock;
-//     delete watson;
-//     delete criminal;
-//     delete map;
-//     return 0;
-// }
-
-// int main()
-// {
-//     // cout << "----- Testcase 343 -----" << endl;
-//     // int num_walls = 4;
-//     // Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4), Position(4, 5)};
-//     // int num_fake_walls = 2;
-//     // Position arr_fake_walls[] = {Position(2, 0), Position(4, 0)};
-
-//     // Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
-
-//     // Watson *watson = new Watson(1, "RUU", Position(1, 3), map, 70, 450);
-
-//     // BaseItem *excemptionCard = new ExcemptionCard();
-//     // BaseItem *firstAid = new FirstAid();
-
-//     // BaseBag *watsonBag = new WatsonBag(watson);
-
-//     // watsonBag->insert(excemptionCard);
-//     // watsonBag->insert(firstAid);
-
-//     // // watsonBag->get();
-
-//     // cout << watsonBag->getCount() << endl;
-
-//     // delete map;
-//     // delete watson;
-//     // delete excemptionCard;
-//     // delete firstAid;
-//     // delete watsonBag;
-//     cout << "----- Testcase 350 -----" << endl;
-//     int num_walls = 4;
-//     Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4), Position(4, 5)};
-//     int num_fake_walls = 2;
-//     Position arr_fake_walls[] = {Position(2, 0), Position(4, 0)};
-
-//     Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
-
-//     Sherlock *sherlock = new Sherlock(1, "RUU", Position(1, 3), map, 251, 390);
-
-//     Watson *watson = new Watson(2, "LU", Position(2, 1), map, 320, 350);
-
-//     Criminal *criminal = new Criminal(0, Position(7, 9), map, sherlock, watson);
-
-//     RobotC *robotC = new RobotC(3, Position(7, 9), map, criminal);
-
-//     RobotS *robotS = new RobotS(4, Position(1, 4), map, criminal, sherlock);
-
-//     sherlock->move();
-//     cout << sherlock->getSteps() << endl;
-//     sherlock->move();
-//     cout << sherlock->getSteps() << endl;
-//     sherlock->move();
-//     cout << sherlock->getSteps();
-//     cout << sherlock->str() << endl;
-//     sherlock->move();
-//     sherlock->move();
-//     sherlock->move();
-//     sherlock->move();
-//     cout << sherlock->str() << endl;
-//     criminal->move();
-//     criminal->move();
-//     criminal->move();
-//     criminal->move();
-//     criminal->move();
-//     criminal->move();
-//     criminal->move();
-//     criminal->move();
-
-//     cout << sherlock->str() << endl;
-//     cout << criminal->str() << endl;
-
-//     delete map;
-//     delete sherlock;
-//     delete watson;
-//     delete criminal;
-//     delete robotC;
-//     delete robotS;
-// }
-
-/*----- Sample Testcase 01 -----
-Sherlock[index=1;pos=(1,3);moving_rule=RUU]
-Watson[index=2;pos=(2,1);moving_rule=LU]
-Criminal[index=0;pos=(7,9)]
-* Sherlock makes a move
-Sherlock[index=1;pos=(1,4);moving_rule=RUU]
-* Watson makes a move
-Watson[index=2;pos=(2,1);moving_rule=LU]
-* Criminal makes a move
-Criminal[index=0;pos=(8,9)]
-ArrayMovingObject[count =3;capacity =10;Criminal[index=0;pos=(8,9)];Sherlock[index=1;pos=(1,4);moving_rule=RUU];Watson[index=2;pos=(2,1);moving_rule=LU]]
-TestStudyInPink::satc_02();
-//FILE CONFIG CONTENT:
-MAP_NUM_ROWS=10
-MAP_NUM_COLS=10
-MAX_NUM_MOVING_OBJECTS=10
-ARRAY_WALLS=[(1,2);(2,3);(3,4)]
-ARRAY_FAKE_WALLS=[(4,5)]
-SHERLOCK_MOVING_RULE=RUU
-SHERLOCK_INIT_POS=(1,3)
-SHERLOCK_INIT_HP=250
-SHERLOCK_INIT_EXP=500
-WATSON_MOVING_RULE=LU
-WATSON_INIT_POS=(2,1)
-WATSON_INIT_HP=300
-WATSON_INIT_EXP=350
-CRIMINAL_INIT_POS=(7,9)
-NUM_STEPS=100
------ Sample Testcase 02 -----
-Configuration[
-MAP_NUM_ROWS=10
-MAP_NUM_COLS=10
-MAX_NUM_MOVING_OBJECTS=10
-NUM_WALLS=3
-ARRAY_WALLS=[(1,2);(2,3);(3,4)]
-NUM_FAKE_WALLS=1
-ARRAY_FAKE_WALLS=[(4,5)]
-SHERLOCK_MOVING_RULE=RUU
-SHERLOCK_INIT_POS=(1,3)
-SHERLOCK_INIT_HP=250
-SHERLOCK_INIT_EXP=500
-WATSON_MOVING_RULE=LU
-WATSON_INIT_POS=(2,1)
-WATSON_INIT_HP=300
-WATSON_INIT_EXP=350
-CRIMINAL_INIT_POS=(7,9)
-NUM_STEPS=100
-]
------ Sample Testcase 02 -----
-
-***Run error***
-Segmentation fault (core dumped)
-*/
 int main()
 {
     // create a test case for Configuration
-    cout << "----- Testcase 320 -----" << endl;
-    int num_walls = 4;
-    Position arr_walls[] = {Position(1, 2), Position(2, 3), Position(3, 4), Position(4, 5)};
-    int num_fake_walls = 2;
-    Position arr_fake_walls[] = {Position(2, 0), Position(4, 0)};
-
-    Map *map = new Map(10, 10, num_walls, arr_walls, num_fake_walls, arr_fake_walls);
-
-    Sherlock *sherlock = new Sherlock(1, "RUU", Position(1, 3), map, 150, 450);
-
-    BaseItem *passingCard1 = new PassingCard("RobotS");
-    BaseItem *passingCard2 = new PassingCard("RobotC");
-
-    BaseBag *sherlockBag = new SherlockBag(sherlock);
-
-    sherlockBag->insert(passingCard1);
-    sherlockBag->insert(passingCard2);
-
-    sherlockBag->get(PASSING_CARD);
-
-    cout << sherlockBag->getCount() << endl;
-    cout << sherlockBag->str() << endl;
-
-    delete map;
-    delete sherlock;
-    delete passingCard1;
-    delete passingCard2;
-    delete sherlockBag;
+    cout << "----- Sample Testcase 02 -----" << endl;
+    Configuration *config = new Configuration("sa_tc_02_config");
+    cout << config->str() << endl;
+    delete config;
 }
