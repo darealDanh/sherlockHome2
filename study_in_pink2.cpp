@@ -740,7 +740,15 @@ Configuration::Configuration(const string &filepath)
         }
         else if (s.find("ARRAY_FAKE_WALLS") == 0)
         {
-            num_fake_walls = (s.length() - 18) / 6;
+            int numFakeWall = 0;
+            for (int i = 0; i < s.length(); i++)
+            {
+                if (s[i] == ';')
+                {
+                    numFakeWall++;
+                }
+            }
+            num_fake_walls = ++numFakeWall;
 
             if (num_fake_walls > 0)
             {
