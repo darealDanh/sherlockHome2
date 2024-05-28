@@ -18,7 +18,7 @@
  * VD: ./main 1 10
  */
 
-#include "study_in_pink2.h"
+#include "study_in_pink21.h"
 #include "vector"
 using namespace std;
 

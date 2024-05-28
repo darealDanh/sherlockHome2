@@ -4,9 +4,10 @@
  * Initial code for Assignment 1
  * Programming Fundamentals Spring 2023
  * Author: Vu Van Tien
- * Date: 01.03.2023
+ * Date: 02.02.2023
  */
 
+// The library here is concretely set, students are not allowed to include any other libraries.
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -18,6 +19,15 @@
 #include <sstream>
 
 using namespace std;
+
+/*
+ * Ho Chi Minh City University of Technology
+ * Faculty of Computer Science and Engineering
+ * Initial code for Assignment 1
+ * Programming Fundamentals Spring 2023
+ * Author: Vu Van Tien
+ * Date: 01.03.2023
+ */
 
 class MovingObject;
 class Position;
@@ -67,6 +77,8 @@ enum RobotType
 
 class MapElement
 {
+    friend class TestStudyInPink;
+
 protected:
     ElementType type;
 
@@ -78,28 +90,36 @@ public:
 
 class Path : public MapElement
 {
+    friend class TestStudyInPink;
+
 public:
     Path();
 };
 
 class Wall : public MapElement
 {
+    friend class TestStudyInPink;
+
 public:
     Wall();
 };
 
 class FakeWall : public MapElement
 {
+    friend class TestStudyInPink;
+
 private:
     int req_exp, r, c;
 
 public:
-    FakeWall(int r, int c);
+    FakeWall(int req_exp);
     int getReqExp() const;
 };
 
 class Position
 {
+    friend class TestStudyInPink;
+
 private:
     int r, c;
 
@@ -121,6 +141,7 @@ public:
     };
 
     bool isEqual(const Position &pos) const;
+    bool isEqual(int r, int c) const;
 };
 
 class MovingObject
@@ -144,9 +165,9 @@ public:
     static const Position npos;
     string getName() const;
     int getHP() const;
-    int getExp() const;
+    int getEXP() const;
     void setHP(int hp);
-    void setExp(int exp);
+    void setEXP(int exp);
 };
 
 class Map
@@ -167,6 +188,8 @@ public:
 
 class Robot : public MovingObject
 {
+    friend class TestStudyInPink;
+
 protected:
     RobotType robot_type;
     BaseItem *item;
@@ -184,6 +207,8 @@ public:
     {
         return robot_type;
     };
+    virtual int getDistance() const;
+    virtual Position getCriminalPos() const;
 };
 
 class Character : public MovingObject
@@ -202,13 +227,16 @@ public:
     virtual void move();
     virtual string str() const = 0;
     BaseBag *getBag() const;
+    int getSteps() const { return steps; };
 };
 class Sherlock /* TODO */ : public Character
 {
+    friend class TestStudyInPink;
+
 public:
     Sherlock(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
-    bool meetRobotC(Robot *robot, Criminal *criminal);
+    bool meetRobotC(Robot *robot);
     bool meetRobot(Robot *robot);
     bool meetWatson(Watson *watson);
     bool meetCriminal(Criminal *criminal);
@@ -217,10 +245,12 @@ public:
 
 class Watson /* TODO */ : public Character
 {
+    friend class TestStudyInPink;
+
 public:
     Watson(int index, const string &moving_rule, const Position &init_pos, Map *map, int init_hp, int init_exp);
     string str() const;
-    bool meetRobotC(Robot *robot, Criminal *criminal);
+    bool meetRobotC(Robot *robot);
     bool meetRobot(Robot *robot);
     bool meetSherlock(Sherlock *sherlock);
     bool meetCriminal(Criminal *criminal);
@@ -229,11 +259,14 @@ public:
 
 class Criminal /* TODO */ : public Character
 {
+    friend class TestStudyInPink;
+
 private:
     Sherlock *sherlock;
     Watson *watson;
     int countSteps;
     Robot *robot;
+    Position prev_pos;
 
 public:
     Criminal(int index, const Position &init_pos, Map *map, Sherlock *sherlock, Watson *watson);
@@ -245,12 +278,12 @@ public:
         return countSteps;
     };
     Robot *getRobot() const;
+    Position getPrevPos() const;
 };
 
 class RobotC : public Robot
 {
-private:
-    Criminal *criminal;
+    friend class TestStudyInPink;
 
 public:
     RobotC(int index, const Position &init_pos, Map *map, Criminal *criminal);
@@ -261,6 +294,8 @@ public:
 
 class RobotS : public Robot
 {
+    friend class TestStudyInPink;
+
 private:
     Sherlock *sherlock;
     Criminal *criminal;
@@ -274,6 +309,8 @@ public:
 
 class RobotW : public Robot
 {
+    friend class TestStudyInPink;
+
 private:
     Watson *watson;
     Criminal *criminal;
@@ -287,6 +324,8 @@ public:
 
 class RobotSW : public Robot
 {
+    friend class TestStudyInPink;
+
 private:
     Criminal *criminal;
     Sherlock *sherlock;
@@ -301,6 +340,8 @@ public:
 
 class BaseItem
 {
+    friend class TestStudyInPink;
+
 public:
     BaseItem(){};
     virtual bool canUse(Character *obj, Robot *robot) = 0;
@@ -310,6 +351,8 @@ public:
 
 class MagicBook : public BaseItem
 {
+    friend class TestStudyInPink;
+
 public:
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
@@ -318,6 +361,8 @@ public:
 
 class EnergyDrink : public BaseItem
 {
+    friend class TestStudyInPink;
+
 public:
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
@@ -326,14 +371,18 @@ public:
 
 class FirstAid : public BaseItem
 {
+    friend class TestStudyInPink;
+
 public:
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
     ItemType getItemType() const;
 };
 
-class ExemptionCard : public BaseItem
+class ExcemptionCard : public BaseItem
 {
+    friend class TestStudyInPink;
+
 public:
     bool canUse(Character *obj, Robot *robot);
     void use(Character *obj, Robot *robot);
@@ -342,8 +391,10 @@ public:
 
 class PassingCard : public BaseItem
 {
+    friend class TestStudyInPink;
+
 private:
-    string challenges;
+    string challenge;
 
 public:
     PassingCard(const string &challenges);
@@ -355,6 +406,8 @@ public:
 
 class BaseBag
 {
+    friend class TestStudyInPink;
+
 protected:
     class Node
     {
@@ -379,7 +432,7 @@ public:
     virtual BaseItem *get();
     virtual BaseItem *get(ItemType itemType);
     virtual string str() const;
-    int getCountItem() const
+    int getCount() const
     {
         return countItem;
     };
@@ -387,6 +440,8 @@ public:
 
 class WatsonBag : public BaseBag
 {
+    friend class TestStudyInPink;
+
 private:
     Watson *watson;
 
@@ -396,6 +451,8 @@ public:
 
 class SherlockBag : public BaseBag
 {
+    friend class TestStudyInPink;
+
 private:
     Sherlock *sherlock;
 
@@ -405,6 +462,8 @@ public:
 
 class ArrayMovingObject
 {
+    friend class TestStudyInPink;
+
 private:
     MovingObject **arr_mv_objs;
     int capacity;
@@ -422,15 +481,13 @@ public:
 
 class Configuration
 {
-    friend class StudyInPinkProgram;
-
-private:
+    friend class StudyPinkProgram;
     // TODO
+public:
     int map_num_rows, map_num_cols, max_num_moving_objects, num_walls, num_fake_walls, sherlock_init_hp, sherlock_init_exp, watson_init_hp, watson_init_exp, num_steps;
-    Position *arr_walls, *arr_fake_walls, *sherlock_init_pos, *watson_init_pos, *criminal_init_pos;
+    Position *arr_walls, *arr_fake_walls, sherlock_init_pos, watson_init_pos, criminal_init_pos;
     string sherlock_moving_rule, watson_moving_rule;
 
-public:
     Configuration(const string &filepath);
     ~Configuration();
     string str() const;
@@ -438,14 +495,13 @@ public:
 
 // Robot, BaseItem, BaseBag,...
 
-class StudyInPinkProgram
+class StudyPinkProgram
 {
     friend class Configuration;
 
-private:
+public:
     // Sample attributes
     Configuration *config;
-
     Sherlock *sherlock;
     Watson *watson;
     Criminal *criminal;
@@ -453,8 +509,7 @@ private:
     Map *map;
     ArrayMovingObject *arr_mv_objs;
 
-public:
-    StudyInPinkProgram(const string &config_file_path);
+    StudyPinkProgram(const string &config_file_path);
 
     bool isStop() const;
 
@@ -481,7 +536,36 @@ public:
              << sherlock->str() << "--|--" << watson->str() << "--|--" << criminal->str() << endl;
     }
 
-    void run(bool verbose);
+    void printInfo(int si, int i, ofstream &OUTPUT) const
+    {
+        OUTPUT << endl
+               << "*************AFTER MOVE*************" << endl;
+        OUTPUT
+            << "ROUND : " << si << " - TURN : " << i << endl;
+        stringstream ss(arr_mv_objs->str());
+        string lineArr = "";
+        getline(ss, lineArr, 'C');
+        OUTPUT << lineArr << "]" << endl;
+        getline(ss, lineArr, ']');
+        OUTPUT << "\tC" << lineArr << "]" << endl;
+        while (getline(ss, lineArr, ']'))
+        {
+            if (lineArr.length() > 0)
+                OUTPUT << "\t" << lineArr.substr(1) << "]" << endl;
+        }
+        OUTPUT << "Sherlock HP_" << sherlock->getHP() << " EXP_" << sherlock->getEXP() << endl
+               << "Watson HP_" << watson->getHP() << " EXP_" << watson->getEXP() << endl
+               << "SherlockBag : " << sherlock->getBag()->str() << endl
+               << "WatsonBag : " << watson->getBag()->str() << endl;
+    }
 
-    ~StudyInPinkProgram();
+    void run(bool verbose);
+    void run(bool verbose, ofstream &OUTPUT);
+
+    ~StudyPinkProgram();
 };
+
+////////////////////////////////////////////////
+/// END OF STUDENT'S ANSWER
+////////////////////////////////////////////////
+/* _H_STUDY_IN_PINK_2_H_ */

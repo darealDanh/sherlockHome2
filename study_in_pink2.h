@@ -8,10 +8,17 @@
  */
 
 // The library here is concretely set, students are not allowed to include any other libraries.
-#ifndef _H_STUDY_IN_PINK_2_H_
-#define _H_STUDY_IN_PINK_2_H_
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <cstring>
+#include <climits>
+#include <cassert>
+#include <string>
+#include <fstream>
+#include <sstream>
 
-#include "main.h"
+using namespace std;
 
 /*
  * Ho Chi Minh City University of Technology
@@ -201,6 +208,7 @@ public:
         return robot_type;
     };
     virtual Position getCriminalPos() const;
+    virtual ~Robot();
 };
 
 class Character : public MovingObject
@@ -336,6 +344,7 @@ class BaseItem
 
 public:
     BaseItem(){};
+    virtual ~BaseItem(){};
     virtual bool canUse(Character *obj, Robot *robot) = 0;
     virtual void use(Character *obj, Robot *robot) = 0;
     virtual ItemType getItemType() const = 0;
@@ -505,28 +514,8 @@ public:
 
     bool isStop() const;
 
-    void printResult() const
-    {
-        if (sherlock->getCurrentPosition().isEqual(criminal->getCurrentPosition()))
-        {
-            cout << "Sherlock caught the criminal" << endl;
-        }
-        else if (watson->getCurrentPosition().isEqual(criminal->getCurrentPosition()))
-        {
-            cout << "Watson caught the criminal" << endl;
-        }
-        else
-        {
-            cout << "The criminal escaped" << endl;
-        }
-    }
-
-    void printStep(int si) const
-    {
-        cout << "Step: " << setw(4) << setfill('0') << si
-             << "--"
-             << sherlock->str() << "--|--" << watson->str() << "--|--" << criminal->str() << endl;
-    }
+    void printResult() const;
+    void printStep(int si) const;
 
     void run(bool verbose);
 
@@ -536,4 +525,4 @@ public:
 ////////////////////////////////////////////////
 /// END OF STUDENT'S ANSWER
 ////////////////////////////////////////////////
-#endif /* _H_STUDY_IN_PINK_2_H_ */
+/* _H_STUDY_IN_PINK_2_H_ */

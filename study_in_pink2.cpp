@@ -274,40 +274,34 @@ bool Sherlock::meetRobotC(Robot *robot)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
-        if (bag->get(PASSING_CARD) != nullptr)
+        if (this->getExp() > 500)
         {
-            BaseItem *item = this->bag->get(PASSING_CARD);
-            item->use(this, robot);
+            pos = robot->getCriminalPos();
+            robot->~Robot();
         }
         else
         {
-            if (this->getExp() > 500)
-            {
-                pos = robot->getCriminalPos();
-            }
-            else
-            {
-                BaseItem *item = robot->getItem();
-                this->bag->insert(item);
-            }
+            BaseItem *item = robot->getItem();
+            this->bag->insert(item);
+            robot->~Robot();
         }
         ItemType item = MAGIC_BOOK;
         BaseItem *magicbook = this->bag->get(item);
-        while (magicbook != nullptr)
+        while (magicbook != nullptr && magicbook->canUse(this, robot))
         {
             magicbook->use(this, robot);
             magicbook = this->bag->get(item);
         }
         item = FIRST_AID;
         BaseItem *firstaid = this->bag->get(item);
-        while (firstaid != nullptr)
+        while (firstaid != nullptr && firstaid->canUse(this, robot))
         {
             firstaid->use(this, robot);
             firstaid = this->bag->get(item);
         }
         item = ENERGY_DRINK;
         BaseItem *energydrink = this->bag->get(item);
-        while (energydrink != nullptr)
+        while (energydrink != nullptr && energydrink->canUse(this, robot))
         {
             energydrink->use(this, robot);
             energydrink = this->bag->get(item);
@@ -321,22 +315,33 @@ bool Sherlock::meetRobot(Robot *robot)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
+        BaseItem *item = this->bag->get(EXCEMPTION_CARD);
+        bool Immune = false;
+        if ((this->bag->get(EXCEMPTION_CARD) != nullptr && this->bag->get(EXCEMPTION_CARD)->canUse(this, robot)))
+        {
+            Immune = true;
+        }
         if (robot->getRobotType() == 1)
         {
             if (this->getExp() > 400)
             {
                 BaseItem *item = robot->getItem();
                 this->bag->insert(item);
+                robot->~Robot();
             }
             else
             {
-                this->setExp(this->getExp() * 0.9);
+                if (Immune == false)
+                {
+                    this->setExp(ceil(this->getExp() * 0.9));
+                }
             }
         }
         if (robot->getRobotType() == 2)
         {
             BaseItem *item = robot->getItem();
             this->bag->insert(item);
+            robot->~Robot();
         }
         if (robot->getRobotType() == 3)
         {
@@ -344,33 +349,34 @@ bool Sherlock::meetRobot(Robot *robot)
             {
                 BaseItem *item = robot->getItem();
                 this->bag->insert(item);
+                robot->~Robot();
             }
             else
             {
-                this->setExp(this->getExp() * 0.85);
-                this->setHP(this->getHP() * 0.85);
+                if (Immune == false)
+                {
+                    this->setExp(ceil(this->getExp() * 0.85));
+                    this->setHP(ceil(this->getHP() * 0.85));
+                }
             }
         }
-        ItemType item = MAGIC_BOOK;
-        BaseItem *magicbook = this->bag->get(item);
-        while (magicbook != nullptr)
+        BaseItem *magicbook = this->bag->get(MAGIC_BOOK);
+        while (magicbook != nullptr && magicbook->canUse(this, robot))
         {
             magicbook->use(this, robot);
-            magicbook = this->bag->get(item);
+            magicbook = this->bag->get(MAGIC_BOOK);
         }
-        item = FIRST_AID;
-        BaseItem *firstaid = this->bag->get(item);
-        while (firstaid != nullptr)
+        BaseItem *firstaid = this->bag->get(FIRST_AID);
+        while (firstaid != nullptr && firstaid->canUse(this, robot))
         {
             firstaid->use(this, robot);
-            firstaid = this->bag->get(item);
+            firstaid = this->bag->get(FIRST_AID);
         }
-        item = ENERGY_DRINK;
-        BaseItem *energydrink = this->bag->get(item);
-        while (energydrink != nullptr)
+        BaseItem *energydrink = this->bag->get(ENERGY_DRINK);
+        while (energydrink != nullptr && energydrink->canUse(this, robot))
         {
             energydrink->use(this, robot);
-            energydrink = this->bag->get(item);
+            energydrink = this->bag->get(ENERGY_DRINK);
         }
         return true;
     }
@@ -469,11 +475,11 @@ bool Watson::meetRobot(Robot *robot)
 {
     if (pos.isEqual(robot->getCurrentPosition()))
     {
-        if (this->bag->get(EXCEMPTION_CARD) != nullptr)
+        if (this->bag->get(PASSING_CARD) != nullptr)
         {
-            BaseItem *item = this->bag->get(EXCEMPTION_CARD);
+            BaseItem *item = this->bag->get(PASSING_CARD);
             item->use(this, robot);
-            robot = nullptr;
+            robot->~Robot();
             return true;
         }
         else
@@ -484,11 +490,11 @@ bool Watson::meetRobot(Robot *robot)
                 {
                     BaseItem *item = robot->getItem();
                     this->bag->insert(item);
-                    robot = nullptr;
+                    robot->~Robot();
                 }
                 else
                 {
-                    this->setHP(this->getHP() * 0.95);
+                    this->setHP(ceil(this->getHP() * 0.95));
                 }
             }
             if (robot->getRobotType() == 3)
@@ -497,32 +503,32 @@ bool Watson::meetRobot(Robot *robot)
                 {
                     BaseItem *item = robot->getItem();
                     this->bag->insert(item);
-                    robot = nullptr;
+                    robot->~Robot();
                 }
                 else
                 {
-                    this->setExp(this->getExp() * 0.85);
-                    this->setHP(this->getHP() * 0.85);
+                    this->setExp(ceil(this->getExp() * 0.85));
+                    this->setHP(ceil(this->getHP() * 0.85));
                 }
             }
         }
         ItemType item = MAGIC_BOOK;
         BaseItem *magicbook = this->bag->get(item);
-        while (magicbook != nullptr)
+        while (magicbook != nullptr && magicbook->canUse(this, robot))
         {
             magicbook->use(this, robot);
             magicbook = this->bag->get(item);
         }
         item = FIRST_AID;
         BaseItem *firstaid = this->bag->get(item);
-        while (firstaid != nullptr)
+        while (firstaid != nullptr && firstaid->canUse(this, robot))
         {
             firstaid->use(this, robot);
             firstaid = this->bag->get(item);
         }
         item = ENERGY_DRINK;
         BaseItem *energydrink = this->bag->get(item);
-        while (energydrink != nullptr)
+        while (energydrink != nullptr && energydrink->canUse(this, robot))
         {
             energydrink->use(this, robot);
             energydrink = this->bag->get(item);
@@ -919,6 +925,14 @@ các chữ số, cho đến khi giá trị tổng đó là số có 1 chữ số
     }
 };
 
+Robot::~Robot()
+{
+    delete item;
+    delete criminal;
+    item = nullptr;
+    criminal = nullptr;
+}
+
 Position Robot::getCurrentPosition() const
 {
     return pos;
@@ -1210,7 +1224,7 @@ void MagicBook::use(Character *obj, Robot *robot)
 {
     if (canUse(obj, robot))
     {
-        obj->setExp(obj->getExp() * 1.25);
+        obj->setExp(ceil(obj->getExp() * 1.25));
     }
 }
 
@@ -1227,7 +1241,7 @@ void EnergyDrink::use(Character *obj, Robot *robot)
 {
     if (canUse(obj, robot))
     {
-        obj->setHP(obj->getHP() * 1.2);
+        obj->setHP(ceil(obj->getHP() * 1.2));
     }
 }
 
@@ -1244,7 +1258,7 @@ void FirstAid::use(Character *obj, Robot *robot)
 {
     if (canUse(obj, robot))
     {
-        obj->setHP(obj->getHP() * 1.5);
+        obj->setHP(ceil(obj->getHP() * 1.5));
     }
 }
 
@@ -1279,14 +1293,14 @@ bool PassingCard::canUse(Character *obj, Robot *robot)
 
 void PassingCard::use(Character *obj, Robot *robot)
 {
-    if (challenge == robot->getName())
+    if (challenge == robot->getName() || challenge == "all")
     {
         BaseItem *item = robot->getItem();
         obj->getBag()->insert(item);
     }
     else
     {
-        obj->setExp(obj->getExp() - 50);
+        obj->setExp(ceil(obj->getExp() - 50));
         BaseItem *item = robot->getItem();
         obj->getBag()->insert(item);
     }
@@ -1425,20 +1439,28 @@ WatsonBag::WatsonBag(Watson *watson) : BaseBag(15)
     this->character = watson;
 }
 
-StudyPinkProgram::StudyPinkProgram(const string &filepath)
+StudyPinkProgram::StudyPinkProgram(const string &config_file_path)
 {
-    ifstream ifs(filepath);
+    ifstream ifs(config_file_path);
     if (!ifs.is_open())
     {
         return;
     }
-    config = new Configuration(filepath);
+    config = new Configuration(config_file_path);
+    map = new Map(config->map_num_rows, config->map_num_cols, config->num_walls, config->arr_walls, config->num_fake_walls, config->arr_fake_walls);
+    sherlock = new Sherlock(1, config->sherlock_moving_rule, config->sherlock_init_pos, map, config->sherlock_init_hp, config->sherlock_init_exp);
+    watson = new Watson(2, config->watson_moving_rule, config->watson_init_pos, map, config->watson_init_hp, config->watson_init_exp);
+    criminal = new Criminal(0, config->criminal_init_pos, map, sherlock, watson);
+    arr_mv_objs = new ArrayMovingObject(config->max_num_moving_objects);
+    arr_mv_objs->add(criminal);
+    arr_mv_objs->add(sherlock);
+    arr_mv_objs->add(watson);
     ifs.close();
 }
 
 bool StudyPinkProgram::isStop() const
 {
-    if (sherlock->getHP() == 0 || watson->getHP() == 0 || criminal->getCurrentPosition().isEqual(sherlock->getCurrentPosition()) || criminal->getCurrentPosition().isEqual(watson->getCurrentPosition()))
+    if (sherlock->getHP() == 1 || watson->getHP() == 1 || criminal->getCurrentPosition().isEqual(sherlock->getCurrentPosition()) || criminal->getCurrentPosition().isEqual(watson->getCurrentPosition()))
     {
         return true;
     }
@@ -1470,6 +1492,12 @@ void StudyPinkProgram::run(bool verbose)
                 sherlock->meetWatson(watson);
                 sherlock->meetRobot(robot);
                 sherlock->meetRobotC(robot);
+                if (isStop())
+                {
+                    printStep(istep);
+                    printResult();
+                    return;
+                }
             }
             if (arr_mv_objs->get(i)->getName() == "Watson")
             {
@@ -1480,22 +1508,66 @@ void StudyPinkProgram::run(bool verbose)
             if (isStop())
             {
                 printStep(istep);
-                break;
+                printResult();
+                return;
             }
             if (verbose)
             {
                 printStep(istep);
+                break;
             }
         }
     }
     printResult();
 }
 
+void StudyPinkProgram::printResult() const
+{
+    if (sherlock->getCurrentPosition().isEqual(criminal->getCurrentPosition()))
+    {
+        cout << "Sherlock caught the criminal" << endl;
+    }
+    else if (watson->getCurrentPosition().isEqual(criminal->getCurrentPosition()))
+    {
+        cout << "Watson caught the criminal" << endl;
+    }
+    else
+    {
+        cout << "The criminal escaped" << endl;
+    }
+}
+
+void StudyPinkProgram::printStep(int si) const
+{
+    cout << "Step: " << setw(4) << setfill('0') << si
+         << "--"
+         << sherlock->str() << "--|--" << watson->str() << "--|--" << criminal->str() << endl;
+}
+
+StudyPinkProgram::~StudyPinkProgram()
+{
+    delete map;
+    delete sherlock;
+    delete watson;
+    delete criminal;
+    delete arr_mv_objs;
+    delete config;
+    map = nullptr;
+    sherlock = nullptr;
+    watson = nullptr;
+    criminal = nullptr;
+    arr_mv_objs = nullptr;
+    config = nullptr;
+}
+
 int main()
 {
     // create a test case for Configuration
-    cout << "----- Sample Testcase 02 -----" << endl;
-    Configuration *config = new Configuration("sa_tc_02_config");
-    cout << config->str() << endl;
-    delete config;
+    cout << "----- Testcase 362 -----" << endl;
+    string config_path = "sa_tc_02_config";
+    bool verbose = false;
+    StudyPinkProgram *program = new StudyPinkProgram(config_path);
+    program->run(verbose);
+    program->printResult();
+    delete program;
 }
