@@ -8,16 +8,8 @@
  */
 
 // The library here is concretely set, students are not allowed to include any other libraries.
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-#include <cstring>
-#include <climits>
-#include <cassert>
-#include <string>
-#include <fstream>
-#include <sstream>
 
+#include "main.h"
 using namespace std;
 
 /*
@@ -113,7 +105,7 @@ private:
 
 public:
     FakeWall(int req_exp);
-    int getReqExp() const;
+    int getReqEXP() const;
 };
 
 class Position
@@ -165,9 +157,9 @@ public:
     static const Position npos;
     string getName() const;
     int getHP() const;
-    int getExp() const;
+    int getEXP() const;
     void setHP(int hp);
-    void setExp(int exp);
+    void setEXP(int exp);
 };
 
 class Map
@@ -516,8 +508,11 @@ public:
 
     void printResult() const;
     void printStep(int si) const;
-
+    bool checkMeet(int i);
     void run(bool verbose);
+    void run(bool verbose, ofstream &OUTPUT);
+
+    void printInfo(int si, int i, ofstream &OUTPUT);
 
     ~StudyPinkProgram();
 };
